@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import batteryRoutes from './routes/batteryRoutes';
+import predictionsRouter from './routes/predictions';
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
 app.use('/api/batteries', batteryRoutes);
+app.use('/api/predictions', predictionsRouter);
 
 app.get('/', (req, res) => {
   res.send('API de gestion BESS et panneaux solaires');
