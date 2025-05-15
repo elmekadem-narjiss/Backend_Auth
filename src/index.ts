@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import batteryRoutes from './routes/batteryRoutes';
 import predictionsRouter from './routes/predictions';
+import equipmentRoutes from './routes/equipment'; 
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use('/api/batteries', batteryRoutes);
 app.use('/api/predictions', predictionsRouter);
+app.use('/api/equipment', equipmentRoutes);
 
 app.get('/', (req, res) => {
   res.send('API de gestion BESS et panneaux solaires');

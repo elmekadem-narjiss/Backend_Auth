@@ -16,10 +16,10 @@ const Prediction = sequelize.define('predictions_lstm', {
 // Log pour vérifier que le modèle est défini
 console.log('Modèle Prediction défini pour la table predictions_lstm');
 
-// Fonction pour récupérer les prédictions
-export const getPredictions = async (limit: number = 10) => {
+// Fonction pour récupérer toutes les prédictions
+export const getPredictions = async () => {
   try {
-    console.log('Début de la récupération des prédictions avec limit:', limit);
+    console.log('Début de la récupération de toutes les prédictions');
     
     const tableExists = await sequelize.getQueryInterface().showAllTables();
     console.log('Tables dans la base de données:', tableExists);
@@ -27,7 +27,7 @@ export const getPredictions = async (limit: number = 10) => {
       console.warn('La table predictions_lstm n\'existe pas dans la base de données !');
     }
 
-    const predictions = await Prediction.findAll({ limit });
+    const predictions = await Prediction.findAll();
     console.log('Nombre de lignes récupérées:', predictions.length);
     console.log('Données récupérées:', JSON.stringify(predictions, null, 2));
     
@@ -39,11 +39,11 @@ export const getPredictions = async (limit: number = 10) => {
 };
 
 // Fonction pour tester une requête brute
-export const getPredictionsRaw = async (limit: number = 10) => {
+export const getPredictionsRaw = async () => {
   try {
     console.log('Exécution d\'une requête SQL brute pour débogage');
     const predictions = await sequelize.query(
-      `SELECT * FROM predictions_lstm LIMIT ${limit}`,
+      `SELECT * FROM predictions_lstm`,
       { type: QueryTypes.SELECT }
     );
     console.log('Données brutes récupérées:', JSON.stringify(predictions, null, 2));
