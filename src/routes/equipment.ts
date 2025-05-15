@@ -16,7 +16,7 @@ function simulateEquipmentData(): EquipmentData[] {
       metrics.temperature = 20 + Math.random() * 20; // 20–40°C
       metrics.humidity = 30 + Math.random() * 50; // 30–80%
     } else if (type === 'panel') {
-      metrics.energyProduced = Math.random() * 10; // 0–10 kWh
+      metrics.energyProduced = 20 + Math.random() * 30; // 20–50 kWh (daily, 10 kW array)
     } else if (type === 'cpu') {
       metrics.cpuUsage = Math.random() * 100; // 0–100%
     } else if (type === 'ram') {
