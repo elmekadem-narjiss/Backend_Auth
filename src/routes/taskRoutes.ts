@@ -14,8 +14,8 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { title, description, status } = req.body;
-    const task = await taskService.createTask(title, description || '', status || 'todo');
+    const { title, description, status, priority } = req.body;
+    const task = await taskService.createTask(title, description || '', status || 'todo', priority || 'medium');
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
@@ -35,8 +35,8 @@ router.put('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, status } = req.body;
-    const task = await taskService.updateTask(parseInt(id), title, description || '', status);
+    const { title, description, status, priority } = req.body;
+    const task = await taskService.updateTask(parseInt(id), title, description || '', status, priority || 'medium');
     res.json(task);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });

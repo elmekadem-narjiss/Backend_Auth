@@ -9,6 +9,7 @@ interface Task {
   description: string;
   status: string;
   created_at: string;
+  priority: string;
 }
 
 console.log('PG_DBNAME:', process.env.PG_DBNAME);
@@ -33,6 +34,7 @@ const initializeTable = async () => {
         title VARCHAR(255) NOT NULL,
         description TEXT,
         status VARCHAR(50) NOT NULL DEFAULT 'todo',
+        priority VARCHAR(50) NOT NULL DEFAULT 'medium',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -58,11 +60,11 @@ export const taskService = {
     }
   },
 
-  createTask: async (title: string, description: string, status: string = 'todo'): Promise<Task> => {
+  createTask: async (title: string, description: string, status: string = 'todo', priority: string = 'medium'): Promise<Task> => {
     try {
       const result = await pool.query(
-        'INSERT INTO tasks (title, description, status) VALUES ($1, $2, $3) RETURNING *',
-        [title, description || '', status]
+        'INSERT INTO tasks (title, description, status, priority) VALUES ($1, $2, $3, $4) RETURNING *',
+        [title, description || '', status, priority]
       );
       return result.rows[0];
     } catch (error) {
@@ -83,11 +85,11 @@ export const taskService = {
     }
   },
 
-  updateTask: async (id: number, title: string, description: string, status: string): Promise<Task> => {
+  updateTask: async (id: number, title: string, description: string, status: string, priority: string): Promise<Task> => {
     try {
       const result = await pool.query(
-        'UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4 RETURNING *',
-        [title, description || '', status, id]
+        'UPDATE tasks SET title = $1, description = $2, status = $3, priority = $4 WHERE id = $5 RETURNING *',
+        [title, description || '', status, priority, id]
       );
       if (result.rowCount === 0) throw new Error('Task not found');
       return result.rows[0];

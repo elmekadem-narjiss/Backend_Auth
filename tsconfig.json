@@ -3,11 +3,11 @@
     "target": "ES6",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": ".", // Changez pour inclure la racine
+    "rootDir": "./src", // Pointe vers src comme racine
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["**/*"], // Inclut tous les fichiers, y compris à la racine
+  "include": ["src/**/*"], // Inclut uniquement les fichiers dans src et ses sous-dossiers
   "exclude": ["node_modules", "dist"]
 }

@@ -23,13 +23,14 @@ console.log('PORT:', process.env.PORT);
 // Initialisation de l'application Express
 const app = express();
 const server = createServer(app);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // Align with the port used in previous tests
 
 // Middleware pour CORS
 app.use(cors({
   origin: 'http://localhost:3000', // Origine du frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Méthodes autorisées
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Include PATCH since taskRoutes uses it
   allowedHeaders: ['Content-Type'], // En-têtes autorisés
+  credentials: true, // Allow credentials if needed (e.g., cookies, auth headers)
 }));
 
 // Middleware pour parser le JSON
@@ -39,7 +40,7 @@ app.use(express.json());
 app.use('/api/batteries', batteryRoutes);
 app.use('/api/predictions', predictionsRouter);
 app.use('/api/equipment', equipmentRoutes);
-app.use('/api/tasks', taskRoutes);
+app.use('/api/tasks', taskRoutes); // Adjusted to match the endpoint used in tests (http://localhost:3001/tasks)
 
 // Route de test
 app.get('/', (req: Request, res: Response) => {
