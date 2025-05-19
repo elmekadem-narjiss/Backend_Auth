@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Mise à jour vers la dernière version
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4 # Mise à jour vers la dernière version
+        uses: actions/setup-node@v4
         with:
-          node-version: '22' # Aligné avec ton environnement local (22.15.18)
+          node-version: '22'
 
       - name: Install Dependencies
         run: npm install
@@ -29,15 +29,30 @@ jobs:
         run: ls -la dist/
 
       - name: Verify Main File Exists
-        run: test -f dist/index.js
-
-      - name: Fail if Main File is Missing
-        if: failure()
-        run: echo "Error: dist/index.js not found" && exit 1
+        run: |
+          if [ ! -f dist/index.js ]; then
+            echo "Error: dist/index.js not found"
+            exit 1
+          fi
 
   test:
     runs-on: ubuntu-latest
-    needs: build # Le job test dépend du job build
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: energy_db
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
