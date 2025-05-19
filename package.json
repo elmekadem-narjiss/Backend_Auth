@@ -11,7 +11,7 @@
     "test:run": "mocha test-dist/test/**/*.js --exit",
     "test": "npm run test:compile && npm run test:run",
     "start-server": "node dist/index.js &",
-    "performance:test": "autocannon -c 50 -d 10 --latency 500 --errorRate 1 http://localhost:3000/ http://localhost:3000/api/tasks"
+    "performance:test": "node test/performance-test.js"
   },
   "dependencies": {
     "@influxdata/influxdb-client": "^1.35.0",
