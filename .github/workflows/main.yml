@@ -55,10 +55,14 @@ jobs:
           node-version: '22'
       - name: Install Dependencies
         run: npm install
-      - name: Run Tests
+      - name: Run TypeScript Compilation
+        run: npx tsc --project tsconfig.test.json
+      - name: Fix Permissions & Run Mocha Tests
         run: |
-          npx tsc --project tsconfig.test.json
-          npx mocha test-dist/test/**/*.js --exit
+          # Accorder les permissions d'exécution aux binaires dans node_modules/.bin
+          chmod +x ./node_modules/.bin/*
+          # Exécuter mocha via node directement
+          node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
       - name: Check Test Output
         if: failure()
         run: echo "Tests failed. Check the output above for details." && exit 1
