@@ -9,7 +9,9 @@
     "dev": "nodemon src/index.ts",
     "test:compile": "tsc --project tsconfig.test.json",
     "test:run": "mocha test-dist/test/**/*.js --exit",
-    "test": "npm run test:compile && npm run test:run"
+    "test": "npm run test:compile && npm run test:run",
+    "start-server": "node dist/index.js &",
+    "performance:test": "autocannon -c 50 -d 10 --latency 500 --errorRate 1 http://localhost:3000/ http://localhost:3000/api/tasks"
   },
   "dependencies": {
     "@influxdata/influxdb-client": "^1.35.0",
@@ -30,13 +32,13 @@
     "@types/cookiejar": "^2.1.5",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.18",
-    "@types/supertest": "^6.0.3",
+    "@types/supertest": "^6.0.2",
     "@types/ws": "^8.18.1",
-    "autocannon": "^8.0.0",
+    "autocannon": "^7.15.0",
     "mocha": "^11.3.0",
     "nodemon": "^3.1.4",
     "superagent": "^9.0.2",
-    "supertest": "^7.1.1",
+    "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
