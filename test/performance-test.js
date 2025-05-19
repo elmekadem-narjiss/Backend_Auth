@@ -1,7 +1,7 @@
 const autocannon = require('autocannon');
 
 async function runPerformanceTests() {
-  const urls = ['http://localhost:3000/', 'http://localhost:3000/api/tasks'];
+  const urls = ['http://localhost:5000/', 'http://localhost:5000/api/tasks'];
 
   for (const url of urls) {
     console.log(`Running performance test for ${url}`);
