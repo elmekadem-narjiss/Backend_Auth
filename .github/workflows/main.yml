@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Mise à jour vers la dernière version
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # Mise à jour vers la dernière version
         with:
-          node-version: '18'
+          node-version: '22' # Aligné avec ton environnement local (22.15.18)
 
       - name: Install Dependencies
         run: npm install
@@ -30,6 +30,30 @@ jobs:
 
       - name: Verify Main File Exists
         run: test -f dist/index.js
+
       - name: Fail if Main File is Missing
         if: failure()
-        run: 'echo "Error: dist/index.js not found" && exit 1'
+        run: echo "Error: dist/index.js not found" && exit 1
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build # Le job test dépend du job build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Check Test Output
+        if: failure()
+        run: echo "Tests failed. Check the output above for details." && exit 1
