@@ -9,25 +9,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Install Dependencies
         run: npm install
-
       - name: Build Backend
         run: npm run build
-
       - name: Check Build Output
         run: ls -la dist/
-
       - name: Verify Main File Exists
         run: |
           if [ ! -f dist/index.js ]; then
@@ -38,7 +32,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: build
-
     services:
       postgres:
         image: postgres:latest
@@ -53,22 +46,23 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Install Dependencies
         run: npm install
-
-      - name: Run Tests
-        run: npm test
-
+      - name: Run TypeScript Compilation
+        run: npx tsc --project tsconfig.test.json
+      - name: Fix Permissions & Run Mocha Tests
+        run: |
+          # Accorder les permissions d'exécution aux binaires dans node_modules/.bin
+          chmod +x ./node_modules/.bin/*
+          # Exécuter mocha via node directement
+          node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
       - name: Check Test Output
         if: failure()
         run: echo "Tests failed. Check the output above for details." && exit 1
