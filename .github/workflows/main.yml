@@ -16,7 +16,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
       - name: Install Dependencies
         run: npm install
       - name: Build Backend
@@ -54,11 +53,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
       - name: Install Dependencies
         run: npm install
       - name: Run Tests
-        run: npm test
+        run: |
+          npx tsc --project tsconfig.test.json
+          npx mocha test-dist/test/**/*.js --exit
       - name: Check Test Output
         if: failure()
         run: echo "Tests failed. Check the output above for details." && exit 1
