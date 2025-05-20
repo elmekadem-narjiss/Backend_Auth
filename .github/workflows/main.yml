@@ -1,4 +1,4 @@
-name: Backend Build
+name: Backend Build with Sonar
 
 on:
   push:
@@ -37,6 +37,7 @@ jobs:
             echo "Error: dist/index.js not found"
             exit 1
           fi
+
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -157,3 +158,24 @@ jobs:
         if: failure()
         run: echo "Integration tests failed. Check the output above for details." && exit 1
 
+  sonarcloud:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Nécessaire pour que SonarCloud puisse analyser l'historique Git
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Run SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.verbose=true  # Active les logs détaillés pour le débogage
