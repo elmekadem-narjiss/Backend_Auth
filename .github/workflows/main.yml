@@ -222,7 +222,7 @@ jobs:
           export PG_USER=admin
           export PG_PASSWORD=admin123
           export PG_HOST=localhost
-          export PG_PORT: 5432
+          export PG_PORT=5432
           node test/setup-db.js > /dev/null 2>&1
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
