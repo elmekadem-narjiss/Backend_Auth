@@ -64,10 +64,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
+      - name: Install nyc for Coverage
+        run: npm install --save-dev nyc
       - name: Initialize Database
         run: node test/setup-db.js
       - name: Run TypeScript Compilation
         run: npx tsc --project tsconfig.test.json
+      - name: Run Coverage Tests with nyc
+        run: |
+          npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
+      - name: Check Coverage Output
+        run: |
+          ls -la coverage/ && cat coverage/lcov.info || echo "Coverage report not generated"
       - name: Fix Permissions & Run Mocha Tests
         run: |
           chmod +x ./node_modules/.bin/*
@@ -178,4 +186,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.verbose=true  # Active les logs détaillés pour le débogage
+            -Dsonar.verbose=true
+            -Dsonar.qualitygate.wait=true
