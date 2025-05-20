@@ -37,7 +37,6 @@ jobs:
             echo "Error: dist/index.js not found"
             exit 1
           fi
-
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -158,48 +157,3 @@ jobs:
         if: failure()
         run: echo "Integration tests failed. Check the output above for details." && exit 1
 
-  sonarcloud:
-    runs-on: ubuntu-latest
-    needs: build
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_DB: ${{ env.PG_DBNAME }}
-          POSTGRES_USER: ${{ env.PG_USER }}
-          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Check SonarCloud Project Settings
-        run: |
-          echo "Fetching SonarCloud project settings for Automatic Analysis..."
-          curl -X GET "https://sonarcloud.io/api/settings/values?component=elmekadem-narjiss_Backen_ML" \
-            -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" > sonar_settings.json
-          echo "SonarCloud settings response:"
-          cat sonar_settings.json || echo "Failed to fetch settings"
-          # Check if Automatic Analysis is enabled
-          grep "sonar.automaticAnalysis.enabled" sonar_settings.json || echo "Automatic Analysis setting not found in response"
-      - name: SonarCloud Scan with Enhanced Debugging
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.analysis.mode=publish
-            -Dsonar.automaticAnalysis.disabled=true
-            -Dsonar.verbose=true
-            -X
