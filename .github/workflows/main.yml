@@ -28,6 +28,7 @@ jobs:
             echo "Error: dist/index.js not found"
             exit 1
           fi
+
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -190,6 +191,10 @@ jobs:
           PG_PORT: 5432
       - name: Install nyc
         run: npm install --save-dev nyc
+      - name: Debug API Initialization
+        run: |
+          node -e "console.log(require('./src/index').app)" > debug.log 2>&1
+          cat debug.log
       - name: Run Coverage Tests with nyc
         run: |
           npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
@@ -199,6 +204,9 @@ jobs:
           PG_PASSWORD: admin123
           PG_HOST: localhost
           PG_PORT: 5432
+      - name: Check Coverage Report
+        run: |
+          ls -la coverage/ && cat coverage/lcov.info || echo "Coverage report not generated"
       - name: Disable Logging of Sensitive Data
         run: |
           export PG_DBNAME=energy_db
@@ -206,7 +214,6 @@ jobs:
           export PG_PASSWORD=admin123
           export PG_HOST=localhost
           export PG_PORT=5432
-          # Ajouter une redirection des logs pour éviter les fuites
           node test/setup-db.js > /dev/null 2>&1
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
