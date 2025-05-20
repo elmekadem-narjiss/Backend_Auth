@@ -12,21 +12,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Install Dependencies
         run: npm install
-
       - name: Build Backend
         run: npm run build
-
       - name: Check Build Output
         run: ls -la dist/
-
       - name: Verify Main File Exists
         run: |
           if [ ! -f dist/index.js ]; then
@@ -54,15 +49,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Install Dependencies
         run: npm install
-
       - name: Initialize Database
         run: node test/setup-db.js
         env:
@@ -71,15 +63,12 @@ jobs:
           PG_PASSWORD: admin123
           PG_HOST: localhost
           PG_PORT: 5432
-
       - name: Run TypeScript Compilation
         run: npx tsc --project tsconfig.test.json
-
       - name: Fix Permissions & Run Mocha Tests
         run: |
           chmod +x ./node_modules/.bin/*
           node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
-
       - name: Check Test Output
         if: failure()
         run: echo "Tests failed. Check the output above for details." && exit 1
@@ -104,30 +93,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Install Dependencies
         run: npm install
-
       - name: Debug Scripts
         run: npm run
-
       - name: Build Backend
         run: npm run build
-
       - name: Start Server
         run: npm run start-server &
-
       - name: Wait for Server
-        run: sleep 10
-
+        run: sleep 15
+      - name: Check Server Status
+        run: curl -I http://localhost:5000/ || echo "Server not running"
       - name: Run Performance Tests
         run: npm run performance:test
-
       - name: Check Performance Output
         if: failure()
         run: echo "Performance tests failed. Check the output above for details." && exit 1
@@ -152,27 +135,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Install Dependencies
         run: npm install
-
       - name: Build Backend
         run: npm run build
-
       - name: Start Server
         run: npm run start-server &
-
       - name: Wait for Server
-        run: sleep 10
-
+        run: sleep 15
+      - name: Check Server Status
+        run: curl -I http://localhost:5000/ || echo "Server not running"
       - name: Run Integration Tests
         run: npx tsc --project tsconfig.test.json && node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
-
       - name: Check Integration Output
         if: failure()
         run: echo "Integration tests failed. Check the output above for details." && exit 1
@@ -197,15 +175,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Install Dependencies
         run: npm install
-
       - name: Initialize Database
         run: node test/setup-db.js
         env:
@@ -214,19 +189,26 @@ jobs:
           PG_PASSWORD: admin123
           PG_HOST: localhost
           PG_PORT: 5432
-
       - name: Install nyc
         run: npm install --save-dev nyc
-
       - name: Run Coverage Tests with nyc
-        run: npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
+        run: |
+          npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
         env:
           PG_DBNAME: energy_db
           PG_USER: admin
           PG_PASSWORD: admin123
           PG_HOST: localhost
           PG_PORT: 5432
-
+      - name: Disable Logging of Sensitive Data
+        run: |
+          export PG_DBNAME=energy_db
+          export PG_USER=admin
+          export PG_PASSWORD=admin123
+          export PG_HOST=localhost
+          export PG_PORT=5432
+          # Ajouter une redirection des logs pour éviter les fuites
+          node test/setup-db.js > /dev/null 2>&1
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
