@@ -236,6 +236,10 @@ jobs:
             echo "Error: sonar-project.properties not found in /github/workspace"
             exit 1
           fi
+      - name: List Files to Analyze
+        run: |
+          echo "Listing files in src directory:"
+          find src -type f -name "*.ts" -o -name "*.js"
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
