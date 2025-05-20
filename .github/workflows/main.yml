@@ -191,13 +191,15 @@ jobs:
           PG_PORT: 5432
       - name: Install nyc
         run: npm install --save-dev nyc
+      - name: Run TypeScript Compilation
+        run: npx tsc --project tsconfig.json
       - name: Debug API Initialization
         run: |
-          if [ ! -f src/index.js ]; then
-            echo "Error: src/index.js not found in /github/workspace"
+          if [ ! -f dist/index.js ]; then
+            echo "Error: dist/index.js not found in /github/workspace"
             exit 1
           fi
-          node -e "try { console.log(require('./src/index').app); } catch (e) { console.error('Error:', e.message); }" > debug.log 2>&1
+          node -e "try { console.log(require('./dist/index').app); } catch (e) { console.error('Error:', e.message); }" > debug.log 2>&1
           cat debug.log
       - name: Run Coverage Tests with nyc
         run: |
