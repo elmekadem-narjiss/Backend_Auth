@@ -7,6 +7,14 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened]
 
+env:
+  PG_DBNAME: energy_db
+  PG_USER: admin
+  PG_PASSWORD: admin123
+  PG_HOST: localhost
+  PG_PORT: 5432
+  NODE_VERSION: '22'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
       - name: Build Backend
@@ -37,9 +45,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: energy_db
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: admin123
+          POSTGRES_DB: ${{ env.PG_DBNAME }}
+          POSTGRES_USER: ${{ env.PG_USER }}
+          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
@@ -53,17 +61,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
       - name: Initialize Database
         run: node test/setup-db.js
-        env:
-          PG_DBNAME: energy_db
-          PG_USER: admin
-          PG_PASSWORD: admin123
-          PG_HOST: localhost
-          PG_PORT: 5432
       - name: Run TypeScript Compilation
         run: npx tsc --project tsconfig.test.json
       - name: Fix Permissions & Run Mocha Tests
@@ -81,9 +83,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: energy_db
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: admin123
+          POSTGRES_DB: ${{ env.PG_DBNAME }}
+          POSTGRES_USER: ${{ env.PG_USER }}
+          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
@@ -97,7 +99,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
       - name: Debug Scripts
@@ -123,9 +125,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: energy_db
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: admin123
+          POSTGRES_DB: ${{ env.PG_DBNAME }}
+          POSTGRES_USER: ${{ env.PG_USER }}
+          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
@@ -139,7 +141,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
       - name: Build Backend
@@ -163,9 +165,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: energy_db
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: admin123
+          POSTGRES_DB: ${{ env.PG_DBNAME }}
+          POSTGRES_USER: ${{ env.PG_USER }}
+          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
@@ -177,21 +179,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones disabled for better relevancy of analysis
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
       - name: Initialize Database
         run: node test/setup-db.js
-        env:
-          PG_DBNAME: energy_db
-          PG_USER: admin
-          PG_PASSWORD: admin123
-          PG_HOST: localhost
-          PG_PORT: 5432
       - name: Install nyc
         run: npm install --save-dev nyc
       - name: Run TypeScript Compilation
@@ -213,34 +209,29 @@ jobs:
       - name: Run Coverage Tests with nyc
         run: |
           npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
-        env:
-          PG_DBNAME: energy_db
-          PG_USER: admin
-          PG_PASSWORD: admin123
-          PG_HOST: localhost
-          PG_PORT: 5432
       - name: Check Coverage Report
         run: |
           ls -la coverage/ && cat coverage/lcov.info || echo "Coverage report not generated"
-      - name: Disable Logging of Sensitive Data
-        run: |
-          export PG_DBNAME=energy_db
-          export PG_USER=admin
-          export PG_PASSWORD=admin123
-          export PG_HOST=localhost
-          export PG_PORT=5432
-          node test/setup-db.js > /dev/null 2>&1
       - name: Verify sonar-project.properties
         run: |
           if [ ! -f sonar-project.properties ]; then
             echo "Error: sonar-project.properties not found in /github/workspace"
             exit 1
           fi
+          echo "Content of sonar-project.properties:"
+          cat sonar-project.properties
+      - name: Check SonarCloud Project Settings
+        run: |
+          echo "Checking SonarCloud project settings for Automatic Analysis..."
+          curl -X GET "https://sonarcloud.io/api/settings/values?component=elmekadem-narjiss_Backen_ML" \
+            -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" > sonar_settings.json
+          echo "SonarCloud settings response:"
+          cat sonar_settings.json || echo "Failed to fetch settings"
       - name: List Files to Analyze
         run: |
           echo "Listing files in src directory:"
           find src -type f -name "*.ts" -o -name "*.js"
-      - name: SonarCloud Scan
+      - name: SonarCloud Scan with Enhanced Debugging
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -248,4 +239,5 @@ jobs:
           args: >
             -Dsonar.analysis.mode=publish
             -Dsonar.automaticAnalysis.disabled=true
-            -X  # Enable debug logs
+            -Dsonar.verbose=true
+            -X
