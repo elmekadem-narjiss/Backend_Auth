@@ -23,5 +23,5 @@ export const connectDB = async () => {
     process.exit(1);
   }
 };
-
+// just test in case the second workflow is working
 export default sequelize;
