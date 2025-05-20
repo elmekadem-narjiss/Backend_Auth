@@ -228,5 +228,7 @@ jobs:
             -Dsonar.projectKey=elmekadem-narjiss_Backen_ML
             -Dsonar.organization=elmekadem-narjiss
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.scanAllFiles=true
+            -X
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
