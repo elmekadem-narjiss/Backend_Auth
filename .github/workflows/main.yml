@@ -186,8 +186,11 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Coverage Tests
-        run: npm run test:coverage
+      - name: Install nyc
+        run: npm install --save-dev nyc
+
+      - name: Run Coverage Tests with nyc
+        run: npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
