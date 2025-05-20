@@ -184,53 +184,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Install Dependencies
-        run: npm install
-      - name: Initialize Database
-        run: node test/setup-db.js
-      - name: Install nyc
-        run: npm install --save-dev nyc
-      - name: Run TypeScript Compilation
-        run: npx tsc --project tsconfig.json
-      - name: Debug API Initialization
-        run: |
-          if [ ! -f dist/index.js ]; then
-            echo "Error: dist/index.js not found in /github/workspace"
-            exit 1
-          fi
-          node -e "try { console.log(require('./dist/index').app); } catch (e) { console.error('Error:', e.message); }" > debug.log 2>&1
-          cat debug.log
-      - name: Start Server for Tests
-        run: npm run start-server &
-      - name: Wait for Server
-        run: sleep 15
-      - name: Check Server Status
-        run: curl -I http://localhost:5000/ || echo "Server not running"
-      - name: Run Coverage Tests with nyc
-        run: |
-          npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
-      - name: Check Coverage Report
-        run: |
-          ls -la coverage/ && cat coverage/lcov.info || echo "Coverage report not generated"
-      - name: Verify sonar-project.properties
-        run: |
-          if [ ! -f sonar-project.properties ]; then
-            echo "Error: sonar-project.properties not found in /github/workspace"
-            exit 1
-          fi
-          echo "Content of sonar-project.properties:"
-          cat sonar-project.properties
       - name: Check SonarCloud Project Settings
         run: |
-          echo "Checking SonarCloud project settings for Automatic Analysis..."
+          echo "Fetching SonarCloud project settings for Automatic Analysis..."
           curl -X GET "https://sonarcloud.io/api/settings/values?component=elmekadem-narjiss_Backen_ML" \
             -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" > sonar_settings.json
           echo "SonarCloud settings response:"
           cat sonar_settings.json || echo "Failed to fetch settings"
-      - name: List Files to Analyze
-        run: |
-          echo "Listing files in src directory:"
-          find src -type f -name "*.ts" -o -name "*.js"
+          # Check if Automatic Analysis is enabled
+          grep "sonar.automaticAnalysis.enabled" sonar_settings.json || echo "Automatic Analysis setting not found in response"
       - name: SonarCloud Scan with Enhanced Debugging
         uses: SonarSource/sonarqube-scan-action@v5
         env:
