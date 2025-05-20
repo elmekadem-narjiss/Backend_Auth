@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -175,6 +176,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones disabled for better relevancy of analysis
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -219,16 +222,14 @@ jobs:
           export PG_USER=admin
           export PG_PASSWORD=admin123
           export PG_HOST=localhost
-          export PG_PORT=5432
+          export PG_PORT: 5432
           node test/setup-db.js > /dev/null 2>&1
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=elmekadem-narjiss_Backen_ML
             -Dsonar.organization=elmekadem-narjiss
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.scanAllFiles=true
-            -X
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
