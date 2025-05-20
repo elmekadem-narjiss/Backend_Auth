@@ -193,7 +193,11 @@ jobs:
         run: npm install --save-dev nyc
       - name: Debug API Initialization
         run: |
-          node -e "console.log(require('./src/index').app)" > debug.log 2>&1
+          if [ ! -f src/index.js ]; then
+            echo "Error: src/index.js not found in /github/workspace"
+            exit 1
+          fi
+          node -e "try { console.log(require('./src/index').app); } catch (e) { console.error('Error:', e.message); }" > debug.log 2>&1
           cat debug.log
       - name: Run Coverage Tests with nyc
         run: |
