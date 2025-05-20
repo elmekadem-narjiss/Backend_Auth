@@ -12,16 +12,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Install Dependencies
         run: npm install
+
       - name: Build Backend
         run: npm run build
+
       - name: Check Build Output
         run: ls -la dist/
+
       - name: Verify Main File Exists
         run: |
           if [ ! -f dist/index.js ]; then
@@ -49,20 +54,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Install Dependencies
         run: npm install
+
       - name: Initialize Database
         run: node test/setup-db.js
+
       - name: Run TypeScript Compilation
         run: npx tsc --project tsconfig.test.json
+
       - name: Fix Permissions & Run Mocha Tests
         run: |
           chmod +x ./node_modules/.bin/*
           node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
+
       - name: Check Test Output
         if: failure()
         run: echo "Tests failed. Check the output above for details." && exit 1
@@ -87,22 +98,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Install Dependencies
         run: npm install
+
       - name: Debug Scripts
         run: npm run
+
       - name: Build Backend
         run: npm run build
+
       - name: Start Server
         run: npm run start-server &
+
       - name: Wait for Server
         run: sleep 10
+
       - name: Run Performance Tests
         run: npm run performance:test
+
       - name: Check Performance Output
         if: failure()
         run: echo "Performance tests failed. Check the output above for details." && exit 1
@@ -127,20 +146,55 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Install Dependencies
         run: npm install
+
       - name: Build Backend
         run: npm run build
+
       - name: Start Server
         run: npm run start-server &
+
       - name: Wait for Server
         run: sleep 10
+
       - name: Run Integration Tests
         run: npx tsc --project tsconfig.test.json && node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
+
       - name: Check Integration Output
         if: failure()
         run: echo "Integration tests failed. Check the output above for details." && exit 1
+
+  sonarcloud:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Coverage Tests
+        run: npm run test:coverage
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.projectKey=elmekadem-narjiss_Backen_ML
+            -Dsonar.organization=elmekadem-narjiss
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
