@@ -207,7 +207,6 @@ jobs:
           export PG_PASSWORD=admin123
           export PG_HOST=localhost
           export PG_PORT=5432
-          # Ajouter une redirection des logs pour éviter les fuites
           node test/setup-db.js > /dev/null 2>&1
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
@@ -216,5 +215,7 @@ jobs:
             -Dsonar.projectKey=elmekadem-narjiss_Backen_ML
             -Dsonar.organization=elmekadem-narjiss
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.analysis.mode=publish  # Forcer l'analyse CI
+            -Dsonar.automaticAnalysis.disabled=true  # Désactiver l'analyse automatique si possible
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
