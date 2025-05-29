@@ -8,6 +8,7 @@ import equipmentRoutes from './routes/equipment';
 import taskRoutes from './routes/taskRoutes';
 import { createServer } from 'http';
 import { startWebSocketServer } from './services/websocketService';
+import axios from 'axios';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -28,7 +29,19 @@ app.use(cors({
 // Middleware pour parser le JSON
 app.use(express.json());
 
-// Routes
+// Route pour récupérer les résultats d'évaluation
+app.get('/api/evaluate', async (req: Request, res: Response) => {
+  try {
+    const pythonApiUrl = 'http://localhost:8001/evaluate';
+    const response = await axios.get(pythonApiUrl);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Erreur lors de la requête à FastAPI:', error);
+    res.status(500).json({ error: (error as any).message });
+  }
+});
+
+// Routes existantes
 app.use('/api/batteries', batteryRoutes);
 app.use('/api/predictions', predictionsRouter);
 app.use('/api/equipment', equipmentRoutes);
@@ -48,7 +61,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // Exporte app pour les tests
 export { app };
 
-// Démarrer le serveur (exécuté uniquement si ce fichier est le point d'entrée principal)
+// Démarrer le serveur
 if (require.main === module) {
   const startServer = async () => {
     try {
@@ -61,8 +74,6 @@ if (require.main === module) {
       console.error('Erreur lors du démarrage du serveur:', error);
       process.exit(1);
     }
-    
   };
   startServer();
-  
 }
