@@ -101,3 +101,17 @@
 {"level":"info","message":"Prix simulé à 2025-05-31T18:01:33.965Z: 0.13058013281479727 €/kWh","timestamp":"2025-05-31T18:01:34.045Z"}
 {"level":"info","message":"Prix mis à jour avec succès: 0.13058013281479727 €/kWh at 2025-05-31T18:01:34.049Z","timestamp":"2025-05-31T18:01:34.049Z"}
 {"level":"error","message":"Erreur lors de la vérification des transactions: fetch failed","timestamp":"2025-05-31T18:01:34.102Z"}
+{"level":"info","message":"Initialisation immédiate des prix à 2025-05-31T18:16:49.724Z","timestamp":"2025-05-31T18:16:49.726Z"}
+{"level":"info","message":"Worker energy-trades processing job: check-trade at 2025-05-31T18:16:50.082Z","timestamp":"2025-05-31T18:16:50.082Z"}
+{"level":"info","message":"Worker energy-prices processing job: update-price at 2025-05-31T18:16:50.086Z","timestamp":"2025-05-31T18:16:50.086Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T18:16:49.729Z: 0.13764393218647 €/kWh","timestamp":"2025-05-31T18:16:50.140Z"}
+{"level":"info","message":"Prix initialisé avec succès: 0.13764393218647 €/kWh","timestamp":"2025-05-31T18:16:50.142Z"}
+{"level":"error","message":"Erreur lors de la vérification des transactions: fetch failed","timestamp":"2025-05-31T18:16:50.167Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T18:16:50.087Z: 0.10289991230526777 €/kWh","timestamp":"2025-05-31T18:16:50.198Z"}
+{"level":"info","message":"Prix mis à jour avec succès: 0.10289991230526777 €/kWh at 2025-05-31T18:16:50.199Z","timestamp":"2025-05-31T18:16:50.199Z"}
+{"level":"info","message":"Initialisation immédiate des prix à 2025-05-31T18:21:35.307Z","timestamp":"2025-05-31T18:21:35.310Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T18:21:35.315Z: 0.14289478497797325 €/kWh","timestamp":"2025-05-31T18:21:35.756Z"}
+{"level":"info","message":"Prix initialisé avec succès: 0.14289478497797325 €/kWh","timestamp":"2025-05-31T18:21:35.757Z"}
+{"level":"info","message":"Initialisation immédiate des prix à 2025-05-31T18:24:16.905Z","timestamp":"2025-05-31T18:24:16.907Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T18:24:16.910Z: 0.14114602270180868 €/kWh","timestamp":"2025-05-31T18:24:17.204Z"}
+{"level":"info","message":"Prix initialisé avec succès: 0.14114602270180868 €/kWh","timestamp":"2025-05-31T18:24:17.206Z"}

@@ -122,7 +122,7 @@ app.get('/api/energy/soc', async (req: Request, res: Response) => {
 app.get('/api/energy/prices', async (req: Request, res: Response) => {
   try {
     const price = await getLatestPrice();
-    res.json({ price });
+    res.json([{ price }]); // Retourne un tableau [{ price: <valeur> }]
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });

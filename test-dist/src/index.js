@@ -163,7 +163,7 @@ app.get('/api/energy/soc', async (req, res) => {
 app.get('/api/energy/prices', async (req, res) => {
     try {
         const price = await (0, energyProviderService_1.getLatestPrice)();
-        res.json({ price });
+        res.json([{ price }]); // Retourne un tableau [{ price: <valeur> }]
     }
     catch (error) {
         if (error instanceof Error) {
