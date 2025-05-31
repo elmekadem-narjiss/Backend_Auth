@@ -75,6 +75,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
+      - name: Install Redis Tools
+        run: sudo apt-get update && sudo apt-get install -y redis-tools
       - name: Build Backend
         run: npm run build
       - name: Wait for Services
@@ -142,6 +144,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
+      - name: Install Redis Tools
+        run: sudo apt-get update && sudo apt-get install -y redis-tools
       - name: Build Backend
         run: npm run build
       - name: Wait for Services
@@ -202,6 +206,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         run: npm install
+      - name: Install Redis Tools
+        run: sudo apt-get update && sudo apt-get install -y redis-tools
       - name: Build Backend
         run: npm run build
       - name: Wait for Services
@@ -266,6 +272,8 @@ jobs:
         run: npm install
       - name: Install nyc for Coverage
         run: npm install --save-dev nyc
+      - name: Install Redis Tools
+        run: sudo apt-get update && sudo apt-get install -y redis-tools
       - name: Build Backend
         run: npm run build
       - name: Run TypeScript Compilation for Tests
