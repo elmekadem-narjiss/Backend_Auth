@@ -8,7 +8,11 @@ import equipmentRoutes from './routes/equipment';
 import taskRoutes from './routes/taskRoutes';
 import { createServer } from 'http';
 import { startWebSocketServer } from './services/websocketService';
-import axios from 'axios';
+import { executeManualTrade, getLatestPrice, getTransactions } from './services/energyProviderService';
+import axios, { AxiosError } from 'axios';
+
+// Importer le module energyQueue pour démarrer les workers
+import './queues/energyQueue'; // Importe et exécute le code automatiquement
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -28,6 +32,97 @@ app.use(cors({
 
 // Middleware pour parser le JSON
 app.use(express.json());
+
+// Route pour exécuter une transaction manuelle
+app.post('/api/energy/trade', async (req: Request, res: Response) => {
+  try {
+    const { type, quantity } = req.body;
+    if (!type || !quantity || !['buy', 'sell'].includes(type)) {
+      throw new Error('Type ou quantité invalide');
+    }
+
+    // Fetch evaluation data
+    let soc;
+    try {
+      const evaluateResponse = await axios.get('http://localhost:5000/api/evaluate', { timeout: 5000 });
+      console.log('Evaluate Response:', evaluateResponse.data);
+      const { metrics } = evaluateResponse.data;
+      if (!metrics || typeof metrics.soc_final !== 'number') {
+        throw new Error('Invalid metrics data');
+      }
+      soc = metrics.soc_final;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('Error fetching /api/evaluate:', error.message, 'Response:', error.response?.data);
+      } else {
+        console.error('Error fetching /api/evaluate:', error);
+      }
+      throw new Error('Failed to fetch SOC data');
+    }
+
+    // Fetch price with error handling
+    let price;
+    try {
+      price = await getLatestPrice();
+      console.log('Price:', price, 'SOC:', soc, 'Quantity:', quantity);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('Error fetching price:', error.message, 'Response:', error.response?.data);
+      } else {
+        console.error('Error fetching price:', error);
+      }
+      throw new Error('Failed to fetch price data');
+    }
+
+    if (type === 'buy') {
+      if (price >= 0.05) throw new Error('Prix trop élevé pour acheter');
+      if (soc >= 80) throw new Error('SOC trop élevé pour acheter');
+      if (quantity > 10) throw new Error('Quantité dépasse la limite d\'achat');
+    }
+    if (type === 'sell' && (price <= 0.12 || soc <= 60 || quantity > 5)) {
+      throw new Error('Conditions de vente non remplies');
+    }
+
+    const result = await executeManualTrade(type, quantity);
+    res.json(result);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Erreur lors de la transaction:', error.message);
+      res.status(400).json({ error: error.message });
+    } else {
+      console.error('Erreur lors de la transaction:', error);
+      res.status(400).json({ error: 'Unknown error during transaction' });
+    }
+  }
+});
+
+// Route pour récupérer le dernier prix
+app.get('/api/energy/prices', async (req: Request, res: Response) => {
+  try {
+    const price = await getLatestPrice();
+    res.json({ price });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Unknown error fetching prices' });
+    }
+  }
+});
+
+// Route pour récupérer l'historique des transactions
+app.get('/api/energy/transactions', async (req: Request, res: Response) => {
+  try {
+    const transactions = await getTransactions();
+    res.json(transactions);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Unknown error fetching transactions' });
+    }
+  }
+});
 
 // Route pour récupérer les résultats d'évaluation
 app.get('/api/evaluate', async (req: Request, res: Response) => {

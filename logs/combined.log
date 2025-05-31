@@ -1,0 +1,30 @@
+{"level":"info","message":"Prix simulé à 2025-05-30T23:45:00.078Z: 0.04350637456801794 €/kWh","timestamp":"2025-05-30T23:45:00.125Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T00:00:00.103Z: 0.03135691956671061 €/kWh","timestamp":"2025-05-31T00:00:00.209Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T00:15:00.193Z: 0.03456739669893395 €/kWh","timestamp":"2025-05-31T00:15:00.228Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T00:30:00.171Z: 0.036235166679291615 €/kWh","timestamp":"2025-05-31T00:30:00.255Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T01:27:48.961Z: 0.0446670533939148 €/kWh","timestamp":"2025-05-31T01:27:49.209Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T01:30:00.089Z: 0.04201620747819153 €/kWh","timestamp":"2025-05-31T01:30:00.126Z"}
+{"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.04201620747819153 €/kWh, profit: 0","timestamp":"2025-05-31T12:54:13.747Z"}
+{"level":"info","message":"Initialisation immédiate des prix à 2025-05-31T13:27:52.018Z","timestamp":"2025-05-31T13:27:52.021Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T13:27:52.026Z: 0.08295772325477829 €/kWh","timestamp":"2025-05-31T13:27:52.224Z"}
+{"level":"info","message":"Prix initialisé avec succès: 0.08295772325477829 €/kWh","timestamp":"2025-05-31T13:27:52.225Z"}
+{"level":"info","message":"Worker energy-trades processing job: check-trade at 2025-05-31T13:27:52.240Z","timestamp":"2025-05-31T13:27:52.241Z"}
+{"level":"info","message":"Worker energy-prices processing job: update-price at 2025-05-31T13:27:52.244Z","timestamp":"2025-05-31T13:27:52.244Z"}
+{"level":"error","message":"Erreur lors de la vérification des transactions: fetch failed","timestamp":"2025-05-31T13:27:52.302Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T13:27:52.246Z: 0.06541563688224958 €/kWh","timestamp":"2025-05-31T13:27:52.333Z"}
+{"level":"info","message":"Prix mis à jour avec succès: 0.06541563688224958 €/kWh at 2025-05-31T13:27:52.334Z","timestamp":"2025-05-31T13:27:52.334Z"}
+{"level":"info","message":"Worker energy-prices processing job: update-price at 2025-05-31T13:30:00.063Z","timestamp":"2025-05-31T13:30:00.063Z"}
+{"level":"info","message":"Worker energy-trades processing job: check-trade at 2025-05-31T13:30:00.067Z","timestamp":"2025-05-31T13:30:00.067Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T13:30:00.065Z: 0.06095679337870886 €/kWh","timestamp":"2025-05-31T13:30:00.110Z"}
+{"level":"info","message":"Prix mis à jour avec succès: 0.06095679337870886 €/kWh at 2025-05-31T13:30:00.111Z","timestamp":"2025-05-31T13:30:00.111Z"}
+{"level":"info","message":"Vérification des transactions terminée at 2025-05-31T13:30:02.808Z","timestamp":"2025-05-31T13:30:02.809Z"}
+{"level":"info","message":"Worker energy-prices processing job: update-price at 2025-05-31T13:45:00.087Z","timestamp":"2025-05-31T13:45:00.087Z"}
+{"level":"info","message":"Worker energy-trades processing job: check-trade at 2025-05-31T13:45:00.091Z","timestamp":"2025-05-31T13:45:00.091Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T13:45:00.089Z: 0.08522839673445641 €/kWh","timestamp":"2025-05-31T13:45:00.144Z"}
+{"level":"info","message":"Prix mis à jour avec succès: 0.08522839673445641 €/kWh at 2025-05-31T13:45:00.145Z","timestamp":"2025-05-31T13:45:00.145Z"}
+{"level":"info","message":"Vérification des transactions terminée at 2025-05-31T13:45:01.927Z","timestamp":"2025-05-31T13:45:01.927Z"}
+{"level":"info","message":"Worker energy-prices processing job: update-price at 2025-05-31T14:00:00.079Z","timestamp":"2025-05-31T14:00:00.079Z"}
+{"level":"info","message":"Worker energy-trades processing job: check-trade at 2025-05-31T14:00:00.082Z","timestamp":"2025-05-31T14:00:00.082Z"}
+{"level":"info","message":"Prix simulé à 2025-05-31T14:00:00.080Z: 0.08910910909871679 €/kWh","timestamp":"2025-05-31T14:00:00.117Z"}
+{"level":"info","message":"Prix mis à jour avec succès: 0.08910910909871679 €/kWh at 2025-05-31T14:00:00.118Z","timestamp":"2025-05-31T14:00:00.118Z"}
+{"level":"info","message":"Vérification des transactions terminée at 2025-05-31T14:00:06.089Z","timestamp":"2025-05-31T14:00:06.089Z"}
