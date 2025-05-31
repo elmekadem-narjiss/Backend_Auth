@@ -11,6 +11,8 @@ import { startWebSocketServer } from './services/websocketService';
 import { executeManualTrade, getLatestPrice, getTransactions } from './services/energyProviderService';
 import axios, { AxiosError } from 'axios';
 
+// Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
+
 // Importer le module energyQueue pour démarrer les workers
 import './queues/energyQueue'; // Importe et exécute le code automatiquement
 
