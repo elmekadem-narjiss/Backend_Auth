@@ -57,6 +57,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,6 +77,17 @@ jobs:
         run: npm install
       - name: Build Backend
         run: npm run build
+      - name: Wait for Services
+        run: |
+          while ! pg_isready -h localhost -p 5432 -U ${{ env.PG_USER }} -d ${{ env.PG_DBNAME }}; do
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+          while ! redis-cli -h localhost -p 6379 ping; do
+            echo "Waiting for Redis..."
+            sleep 5
+          done
+          sleep 10
       - name: Initialize Database
         run: node test/setup-db.js
       - name: Start Server in Background
@@ -104,6 +124,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -115,6 +144,17 @@ jobs:
         run: npm install
       - name: Build Backend
         run: npm run build
+      - name: Wait for Services
+        run: |
+          while ! pg_isready -h localhost -p 5432 -U ${{ env.PG_USER }} -d ${{ env.PG_DBNAME }}; do
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+          while ! redis-cli -h localhost -p 6379 ping; do
+            echo "Waiting for Redis..."
+            sleep 5
+          done
+          sleep 10
       - name: Start Server
         run: npm run start-server &
       - name: Wait for Server
@@ -144,6 +184,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -155,6 +204,17 @@ jobs:
         run: npm install
       - name: Build Backend
         run: npm run build
+      - name: Wait for Services
+        run: |
+          while ! pg_isready -h localhost -p 5432 -U ${{ env.PG_USER }} -d ${{ env.PG_DBNAME }}; do
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+          while ! redis-cli -h localhost -p 6379 ping; do
+            echo "Waiting for Redis..."
+            sleep 5
+          done
+          sleep 10
       - name: Start Server
         run: npm run start-server &
       - name: Wait for Server
@@ -189,7 +249,7 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd redis-cli ping
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
