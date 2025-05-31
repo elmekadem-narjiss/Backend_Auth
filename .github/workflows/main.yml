@@ -288,7 +288,7 @@ jobs:
             echo "Waiting for Redis..."
             sleep 5
           done
-          sleep 10  # Temps supplémentaire pour les services
+          sleep 10
       - name: Start Server in Background
         run: npm run start-server > server.log 2>&1 &
       - name: Wait for Server
@@ -312,6 +312,10 @@ jobs:
       - name: Check Coverage Output
         run: |
           ls -la coverage/ && cat coverage/lcov.info || echo "Coverage report not generated"
+      - name: Debug Test Files
+        run: |
+          echo "Listing test files:"
+          ls -la test-dist/test/
       - name: Debug Environment
         run: |
           echo "PG_HOST: $PG_HOST"
