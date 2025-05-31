@@ -14,6 +14,8 @@ env:
   PG_HOST: localhost
   PG_PORT: 5432
   NODE_VERSION: '22'
+  REDIS_HOST: localhost
+  REDIS_PORT: 6379
 
 jobs:
   build:
@@ -208,11 +210,51 @@ jobs:
         run: npm run build
       - name: Run TypeScript Compilation for Tests
         run: npx tsc --project tsconfig.test.json
+      - name: Wait for Services
+        run: |
+          while ! pg_isready -h localhost -p 5432 -U ${{ env.PG_USER }} -d ${{ env.PG_DBNAME }}; do
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+          while ! redis-cli -h localhost -p 6379 ping; do
+            echo "Waiting for Redis..."
+            sleep 5
+          done
+          sleep 10  # Temps supplémentaire pour les services
+      - name: Start Server in Background
+        run: npm run start-server > server.log 2>&1 &
+      - name: Wait for Server
+        run: |
+          for i in {1..30}; do
+            if curl -I http://localhost:5000/ 2>/dev/null | grep -q "200"; then
+              echo "Server is up!"
+              break
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+            if [ $i -eq 30 ]; then
+              echo "Server failed to start after 60 seconds"
+              exit 1
+            fi
+          done
+      - name: Check Server Status
+        run: curl -I http://localhost:5000/ || echo "Server not running"
       - name: Run Tests with Coverage
         run: npx nyc --reporter=lcov --report-dir=coverage node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
       - name: Check Coverage Output
         run: |
           ls -la coverage/ && cat coverage/lcov.info || echo "Coverage report not generated"
+      - name: Debug Environment
+        run: |
+          echo "PG_HOST: $PG_HOST"
+          echo "PG_PORT: $PG_PORT"
+          echo "REDIS_HOST: $REDIS_HOST"
+          echo "REDIS_PORT: $REDIS_PORT"
+          ps aux | grep postgres
+          ps aux | grep redis
+      - name: Debug Server Logs
+        if: always()
+        run: cat server.log || echo "Server log not found"
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
