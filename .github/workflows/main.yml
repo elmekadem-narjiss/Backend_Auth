@@ -167,12 +167,35 @@ jobs:
 
   sonarcloud:
     runs-on: ubuntu-latest
-    needs: [build, test]  # Ajout de la dépendance à test
+    needs: [build, test]
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: ${{ env.PG_DBNAME }}
+          POSTGRES_USER: ${{ env.PG_USER }}
+          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd redis-cli ping
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Nécessaire pour que SonarCloud puisse analyser l'historique Git
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
