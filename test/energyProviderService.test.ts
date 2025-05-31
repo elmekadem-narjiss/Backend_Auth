@@ -1,6 +1,8 @@
 // tests/energyProviderService.test.ts
 import { updateEnergyPrice, getLatestPrice } from '../src/services/energyProviderService';
 
+
+//add ts
 jest.mock('../src/config/postgres', () => ({
   query: jest.fn(),
 }));
