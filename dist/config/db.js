@@ -28,4 +28,5 @@ const connectDB = async () => {
     }
 };
 exports.connectDB = connectDB;
+// just test in case the second workflow is working
 exports.default = sequelize;

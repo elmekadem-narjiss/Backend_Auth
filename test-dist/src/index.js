@@ -50,6 +50,7 @@ const websocketService_1 = require("./services/websocketService");
 const energyProviderService_1 = require("./services/energyProviderService");
 const axios_1 = __importStar(require("axios"));
 // Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
+//test declanche
 // Importer le module energyQueue pour démarrer les workers
 require("./queues/energyQueue"); // Importe et exécute le code automatiquement
 // Charger les variables d'environnement
