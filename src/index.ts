@@ -14,6 +14,7 @@ import axios, { AxiosError } from 'axios';
 // Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
 //test declanche
 // Importer le module energyQueue pour démarrer les workers
+// for testing
 import './queues/energyQueue'; // Importe et exécute le code automatiquement
 
 // Charger les variables d'environnement
