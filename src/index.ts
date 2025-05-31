@@ -96,6 +96,26 @@ app.post('/api/energy/trade', async (req: Request, res: Response) => {
   }
 });
 
+// Nouvelle route pour récupérer le SOC
+app.get('/api/energy/soc', async (req: Request, res: Response) => {
+  try {
+    const evaluateResponse = await axios.get('http://localhost:5000/api/evaluate', { timeout: 5000 });
+    const { metrics } = evaluateResponse.data;
+    if (!metrics || typeof metrics.soc_final !== 'number') {
+      throw new Error('Invalid metrics data');
+    }
+    const soc = metrics.soc_final;
+    res.json({ soc });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Error fetching SOC:', error.message, 'Response:', error.response?.data);
+    } else {
+      console.error('Error fetching SOC:', error);
+    }
+    res.status(500).json({ error: 'Failed to fetch SOC data' });
+  }
+});
+
 // Route pour récupérer le dernier prix
 app.get('/api/energy/prices', async (req: Request, res: Response) => {
   try {
