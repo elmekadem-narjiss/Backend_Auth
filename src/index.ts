@@ -12,7 +12,7 @@ import { executeManualTrade, getLatestPrice, getTransactions } from './services/
 import axios, { AxiosError } from 'axios';
 
 // Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
-
+//test declanche
 // Importer le module energyQueue pour démarrer les workers
 import './queues/energyQueue'; // Importe et exécute le code automatiquement
 
