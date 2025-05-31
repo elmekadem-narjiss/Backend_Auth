@@ -49,6 +49,7 @@ const http_1 = require("http");
 const websocketService_1 = require("./services/websocketService");
 const energyProviderService_1 = require("./services/energyProviderService");
 const axios_1 = __importStar(require("axios"));
+// Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
 // Importer le module energyQueue pour démarrer les workers
 require("./queues/energyQueue"); // Importe et exécute le code automatiquement
 // Charger les variables d'environnement
@@ -133,6 +134,28 @@ app.post('/api/energy/trade', async (req, res) => {
             console.error('Erreur lors de la transaction:', error);
             res.status(400).json({ error: 'Unknown error during transaction' });
         }
+    }
+});
+// Nouvelle route pour récupérer le SOC
+app.get('/api/energy/soc', async (req, res) => {
+    var _a;
+    try {
+        const evaluateResponse = await axios_1.default.get('http://localhost:5000/api/evaluate', { timeout: 5000 });
+        const { metrics } = evaluateResponse.data;
+        if (!metrics || typeof metrics.soc_final !== 'number') {
+            throw new Error('Invalid metrics data');
+        }
+        const soc = metrics.soc_final;
+        res.json({ soc });
+    }
+    catch (error) {
+        if (error instanceof axios_1.AxiosError) {
+            console.error('Error fetching SOC:', error.message, 'Response:', (_a = error.response) === null || _a === void 0 ? void 0 : _a.data);
+        }
+        else {
+            console.error('Error fetching SOC:', error);
+        }
+        res.status(500).json({ error: 'Failed to fetch SOC data' });
     }
 });
 // Route pour récupérer le dernier prix
