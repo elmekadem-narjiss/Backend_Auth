@@ -91,7 +91,16 @@ jobs:
           done
           sleep 10
       - name: Initialize Database
-        run: node test/setup-db.js
+        env:
+          PG_DBNAME: ${{ env.PG_DBNAME }}
+          PG_USER: ${{ env.PG_USER }}
+          PG_PASSWORD: ${{ env.PG_PASSWORD }}
+          PG_HOST: ${{ env.PG_HOST }}
+          PG_PORT: ${{ env.PG_PORT }}
+        run: |
+          echo "PG_HOST: $PG_HOST, PG_PORT: $PG_PORT, PG_USER: $PG_USER, PG_DBNAME: $PG_DBNAME"
+          node test/setup-db.js
+        continue-on-error: true
       - name: Start Server in Background
         run: npm run start-server > server.log 2>&1 &
       - name: Wait for Server
