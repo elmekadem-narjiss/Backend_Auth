@@ -99,8 +99,7 @@ jobs:
           PG_PORT: ${{ env.PG_PORT }}
         run: |
           echo "PG_HOST: $PG_HOST, PG_PORT: $PG_PORT, PG_USER: $PG_USER, PG_DBNAME: $PG_DBNAME"
-          node test/setup-db.js
-        continue-on-error: true
+          node test/setup-db.js || { echo "Database initialization failed"; cat test/setup-db.js; exit 1; }
       - name: Start Server in Background
         run: npm run start-server > server.log 2>&1 &
       - name: Wait for Server
@@ -112,7 +111,7 @@ jobs:
       - name: Run Tests with Mocha
         run: node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
       - name: Display Server Logs
-        if: failure()
+        if: always()
         run: cat server.log || echo "Server log not found"
       - name: Check Test Output
         if: failure()
@@ -168,6 +167,16 @@ jobs:
             sleep 5
           done
           sleep 10
+      - name: Initialize Database
+        env:
+          PG_DBNAME: ${{ env.PG_DBNAME }}
+          PG_USER: ${{ env.PG_USER }}
+          PG_PASSWORD: ${{ env.PG_PASSWORD }}
+          PG_HOST: ${{ env.PG_HOST }}
+          PG_PORT: ${{ env.PG_PORT }}
+        run: |
+          echo "PG_HOST: $PG_HOST, PG_PORT: $PG_PORT, PG_USER: $PG_USER, PG_DBNAME: $PG_DBNAME"
+          node test/setup-db.js || { echo "Database initialization failed"; cat test/setup-db.js; exit 1; }
       - name: Start Server
         run: npm run start-server &
       - name: Wait for Server
@@ -230,6 +239,16 @@ jobs:
             sleep 5
           done
           sleep 10
+      - name: Initialize Database
+        env:
+          PG_DBNAME: ${{ env.PG_DBNAME }}
+          PG_USER: ${{ env.PG_USER }}
+          PG_PASSWORD: ${{ env.PG_PASSWORD }}
+          PG_HOST: ${{ env.PG_HOST }}
+          PG_PORT: ${{ env.PG_PORT }}
+        run: |
+          echo "PG_HOST: $PG_HOST, PG_PORT: $PG_PORT, PG_USER: $PG_USER, PG_DBNAME: $PG_DBNAME"
+          node test/setup-db.js || { echo "Database initialization failed"; cat test/setup-db.js; exit 1; }
       - name: Start Server
         run: npm run start-server &
       - name: Wait for Server
@@ -238,6 +257,9 @@ jobs:
         run: curl -I http://localhost:5000/ || echo "Server not running"
       - name: Run Integration Tests
         run: npx tsc --project tsconfig.test.json && node ./node_modules/mocha/bin/mocha.js test-dist/test/**/*.js --exit
+      - name: Display Server Logs
+        if: always()
+        run: cat server.log || echo "Server log not found"
       - name: Check Integration Output
         if: failure()
         run: echo "Integration tests failed. Check the output above for details." && exit 1
@@ -298,6 +320,16 @@ jobs:
             sleep 5
           done
           sleep 10
+      - name: Initialize Database
+        env:
+          PG_DBNAME: ${{ env.PG_DBNAME }}
+          PG_USER: ${{ env.PG_USER }}
+          PG_PASSWORD: ${{ env.PG_PASSWORD }}
+          PG_HOST: ${{ env.PG_HOST }}
+          PG_PORT: ${{ env.PG_PORT }}
+        run: |
+          echo "PG_HOST: $PG_HOST, PG_PORT: $PG_PORT, PG_USER: $PG_USER, PG_DBNAME: $PG_DBNAME"
+          node test/setup-db.js || { echo "Database initialization failed"; cat test/setup-db.js; exit 1; }
       - name: Start Server in Background
         run: npm run start-server > server.log 2>&1 &
       - name: Wait for Server
