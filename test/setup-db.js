@@ -13,29 +13,31 @@ async function setupDatabase() {
   try {
     console.log('Initializing database tables...');
 
-    // Créer la table prices
+    // Créer la table prices avec une colonne time
     await client.query(`
       CREATE TABLE IF NOT EXISTS prices (
         id SERIAL PRIMARY KEY,
         price DECIMAL NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Colonne time ajoutée
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Pour compatibilité
       );
     `);
     console.log('Table "prices" created or already exists');
 
-    // Créer la table transactions
+    // Créer la table transactions avec une colonne price
     await client.query(`
       CREATE TABLE IF NOT EXISTS transactions (
         id SERIAL PRIMARY KEY,
         type VARCHAR(10) NOT NULL CHECK (type IN ('buy', 'sell')),
         quantity INTEGER NOT NULL,
+        price DECIMAL NOT NULL, -- Colonne price ajoutée
         profit DECIMAL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log('Table "transactions" created or already exists');
 
-    // Créer la table tasks (si nécessaire)
+    // Créer la table tasks
     await client.query(`
       CREATE TABLE IF NOT EXISTS tasks (
         id SERIAL PRIMARY KEY,
