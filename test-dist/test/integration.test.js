@@ -20,22 +20,23 @@ describe('Integration Tests', () => {
             dialect: 'postgres',
             logging: false
         });
-        await sequelize.sync({ force: true }); // Réinitialise la base
+        // Désactivé car géré par test/setup-db.js
+        // await sequelize.sync({ force: true });
     });
     after(() => {
         return sequelize.close();
     });
     it('should create and retrieve a task', async () => {
         // Créer une tâche
-        await (0, supertest_1.default)(index_1.app)
+        const createResponse = await (0, supertest_1.default)(index_1.app)
             .post('/api/tasks')
-            .send({ title: 'Test Task', description: 'Test Description' })
+            .send({ title: 'Test Task', description: 'Test Description', status: 'todo', priority: 'medium' })
             .expect(201);
         // Récupérer la tâche
         const response = await (0, supertest_1.default)(index_1.app)
             .get('/api/tasks')
             .expect(200);
         (0, assert_1.default)(response.body.length > 0, 'Tasks list should not be empty');
-        (0, assert_1.default)(response.body.some((task) => task.title === 'Test Task'));
+        (0, assert_1.default)(response.body.some((task) => task.title === 'Test Task' && task.description === 'Test Description'));
     });
 });

@@ -13,39 +13,47 @@ async function setupDatabase() {
   try {
     console.log('Initializing database tables...');
 
-    // Créer la table prices avec une colonne time
+    // Vider les tables existantes
+    await client.query('DROP TABLE IF EXISTS prices CASCADE');
+    await client.query('DROP TABLE IF EXISTS transactions CASCADE');
+    await client.query('DROP TABLE IF EXISTS tasks CASCADE');
+
+    // Créer la table prices
     await client.query(`
-      CREATE TABLE IF NOT EXISTS prices (
+      CREATE TABLE prices (
         id SERIAL PRIMARY KEY,
         price DECIMAL NOT NULL,
-        time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Colonne time ajoutée
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Pour compatibilité
+        time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log('Table "prices" created or already exists');
+    console.log('Table "prices" created');
 
-    // Créer la table transactions avec une colonne price
+    // Créer la table transactions
     await client.query(`
-      CREATE TABLE IF NOT EXISTS transactions (
+      CREATE TABLE transactions (
         id SERIAL PRIMARY KEY,
         type VARCHAR(10) NOT NULL CHECK (type IN ('buy', 'sell')),
         quantity INTEGER NOT NULL,
-        price DECIMAL NOT NULL, -- Colonne price ajoutée
+        price DECIMAL NOT NULL,
         profit DECIMAL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log('Table "transactions" created or already exists');
+    console.log('Table "transactions" created');
 
-    // Créer la table tasks
+    // Créer la table tasks avec les colonnes attendues
     await client.query(`
-      CREATE TABLE IF NOT EXISTS tasks (
+      CREATE TABLE tasks (
         id SERIAL PRIMARY KEY,
-        description TEXT NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(20) DEFAULT 'todo',
+        priority VARCHAR(20) DEFAULT 'medium',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log('Table "tasks" created or already exists');
+    console.log('Table "tasks" created');
   } catch (error) {
     console.error('Error initializing database:', error);
     throw error;

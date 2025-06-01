@@ -17,7 +17,8 @@ describe('Integration Tests', () => {
       dialect: 'postgres',
       logging: false
     });
-    await sequelize.sync({ force: true }); // Réinitialise la base
+    // Désactivé car géré par test/setup-db.js
+    // await sequelize.sync({ force: true });
   });
 
   after(() => {
@@ -26,9 +27,9 @@ describe('Integration Tests', () => {
 
   it('should create and retrieve a task', async () => {
     // Créer une tâche
-    await request(app)
+    const createResponse = await request(app)
       .post('/api/tasks')
-      .send({ title: 'Test Task', description: 'Test Description' })
+      .send({ title: 'Test Task', description: 'Test Description', status: 'todo', priority: 'medium' })
       .expect(201);
 
     // Récupérer la tâche
@@ -37,6 +38,6 @@ describe('Integration Tests', () => {
       .expect(200);
 
     assert(response.body.length > 0, 'Tasks list should not be empty');
-    assert(response.body.some((task: any) => task.title === 'Test Task'));
+    assert(response.body.some((task: any) => task.title === 'Test Task' && task.description === 'Test Description'));
   });
 });
