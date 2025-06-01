@@ -1,22 +1,38 @@
 import logger from '../config/logger';
 import fetch from 'node-fetch';
 import { Job } from 'bullmq';
+import { randomInt } from 'crypto';
+import seedrandom from 'seedrandom';
 
 type QueryResult<T> = T[] | { rows: T[] };
 type QueryFunction = (text: string, params?: any[]) => Promise<QueryResult<any>>;
 
-export function simulatePrice(hour: number): number {
+function generateRandomPrice(min: number, max: number, useCrypto: boolean = false, seed?: string): number {
+  let randomValue: number;
+  if (useCrypto) {
+    randomValue = randomInt(0, 10000) / 10000; // Génère un nombre entre 0 et 1
+  } else if (seed) {
+    const rng = seedrandom(seed);
+    randomValue = rng();
+  } else {
+    randomValue = Math.random();
+  }
+  const range = max - min;
+  return Number((randomValue * range + min).toFixed(2));
+}
+
+export function simulatePrice(hour: number, useCrypto: boolean = false, seed?: string): number {
   console.log(`simulatePrice called with hour: ${hour}`);
-  if (hour >= 0 && hour <= 5) return Number((Math.random() * (0.05 - 0.03) + 0.03).toFixed(2));
-  if (hour >= 6 && hour <= 16) return Number((Math.random() * (0.09 - 0.06) + 0.06).toFixed(2));
-  return Number((Math.random() * (0.15 - 0.10) + 0.10).toFixed(2));
+  if (hour >= 0 && hour <= 5) return generateRandomPrice(0.03, 0.05, useCrypto, seed);
+  if (hour >= 6 && hour <= 16) return generateRandomPrice(0.06, 0.09, useCrypto, seed);
+  return generateRandomPrice(0.10, 0.15, useCrypto, seed);
 }
 
 export async function updateEnergyPrice(query: QueryFunction): Promise<number> {
   console.log('updateEnergyPrice called');
   const now = new Date();
   const hour = now.getHours();
-  const price = simulatePrice(hour);
+  const price = simulatePrice(hour, true); // Utilise crypto.randomInt() pour la sécurité en production
   console.log(`Executing query with: INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *`, [now, price]);
   const result = await query('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]) as QueryResult<{ time: Date; price: number }>;
   logger.info(`Prix simulé à ${now.toISOString()}: ${price} €/kWh`);

@@ -27,6 +27,7 @@
     "keycloak-connect": "^26.1.1",
     "node-fetch": "^2.7.0",
     "pg": "^8.16.0",
+    "seedrandom": "^3.0.5",
     "sequelize": "^6.37.3",
     "winston": "^3.17.0",
     "ws": "^8.18.2"
@@ -38,6 +39,7 @@
     "@types/nock": "^11.1.0",
     "@types/node": "^22.15.18",
     "@types/node-fetch": "^2.6.12",
+    "@types/seedrandom": "^3.0.8",
     "@types/sinon": "^17.0.4",
     "@types/supertest": "^6.0.2",
     "@types/ws": "^8.18.1",

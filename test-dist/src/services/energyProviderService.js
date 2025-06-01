@@ -11,19 +11,36 @@ exports.executeManualTrade = executeManualTrade;
 exports.getTransactions = getTransactions;
 const logger_1 = __importDefault(require("../config/logger"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
-function simulatePrice(hour) {
+const crypto_1 = require("crypto");
+const seedrandom_1 = __importDefault(require("seedrandom"));
+function generateRandomPrice(min, max, useCrypto = false, seed) {
+    let randomValue;
+    if (useCrypto) {
+        randomValue = (0, crypto_1.randomInt)(0, 10000) / 10000; // Génère un nombre entre 0 et 1
+    }
+    else if (seed) {
+        const rng = (0, seedrandom_1.default)(seed);
+        randomValue = rng();
+    }
+    else {
+        randomValue = Math.random();
+    }
+    const range = max - min;
+    return Number((randomValue * range + min).toFixed(2));
+}
+function simulatePrice(hour, useCrypto = false, seed) {
     console.log(`simulatePrice called with hour: ${hour}`);
     if (hour >= 0 && hour <= 5)
-        return Number((Math.random() * (0.05 - 0.03) + 0.03).toFixed(2));
+        return generateRandomPrice(0.03, 0.05, useCrypto, seed);
     if (hour >= 6 && hour <= 16)
-        return Number((Math.random() * (0.09 - 0.06) + 0.06).toFixed(2));
-    return Number((Math.random() * (0.15 - 0.10) + 0.10).toFixed(2));
+        return generateRandomPrice(0.06, 0.09, useCrypto, seed);
+    return generateRandomPrice(0.10, 0.15, useCrypto, seed);
 }
 async function updateEnergyPrice(query) {
     console.log('updateEnergyPrice called');
     const now = new Date();
     const hour = now.getHours();
-    const price = simulatePrice(hour);
+    const price = simulatePrice(hour, true); // Utilise crypto.randomInt() pour la sécurité en production
     console.log(`Executing query with: INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *`, [now, price]);
     const result = await query('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]);
     logger_1.default.info(`Prix simulé à ${now.toISOString()}: ${price} €/kWh`);

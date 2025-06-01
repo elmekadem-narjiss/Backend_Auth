@@ -20,9 +20,7 @@ describe('Energy Provider Service', () => {
     sandbox = sinon.createSandbox();
     fetchStub = sandbox.stub(fetch, 'default') as sinon.SinonStub;
     loggerInfoStub = sandbox.stub(logger, 'info');
-    console.log('Creating mockQuery before stub:', mockQuery);
     mockQuery = sandbox.stub();
-    console.log('Created mockQuery after stub:', mockQuery);
   });
 
   afterEach(() => {
@@ -33,19 +31,19 @@ describe('Energy Provider Service', () => {
   describe('simulatePrice', () => {
     it('should return a price between 0.03 and 0.05 for hours 0-5', () => {
       console.log('Running test: should return a price between 0.03 and 0.05');
-      const price = simulatePrice(3);
+      const price = simulatePrice(3, false, 'test-seed'); // Utilise une graine fixe pour reproductibilité
       assert(price >= 0.03 && price <= 0.05, `Price ${price} should be between 0.03 and 0.05`);
     });
 
     it('should return a price between 0.06 and 0.09 for hours 6-16', () => {
       console.log('Running test: should return a price between 0.06 and 0.09');
-      const price = simulatePrice(10);
+      const price = simulatePrice(10, false, 'test-seed');
       assert(price >= 0.06 && price <= 0.09, `Price ${price} should be between 0.06 and 0.09`);
     });
 
     it('should return a price between 0.10 and 0.15 for hours 17-23', () => {
       console.log('Running test: should return a price between 0.10 and 0.15');
-      const price = simulatePrice(18);
+      const price = simulatePrice(18, false, 'test-seed');
       assert(price >= 0.10 && price <= 0.15, `Price ${price} should be between 0.10 and 0.15`);
     });
   });
@@ -67,8 +65,7 @@ describe('Energy Provider Service', () => {
     it('should insert a simulated price into the database', async () => {
       console.log('Running test: should insert a simulated price');
       const now = new Date('2025-06-01T03:00:00Z');
-      sandbox.stub(Math, 'random').returns(0.5); // Simuler un prix fixe : 0.04
-      const price = simulatePrice(3);
+      const price = simulatePrice(3, false, 'test-seed'); // Prix fixe avec graine
       mockQuery.withArgs('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]).resolves([{ time: now, price }]);
       const result = await updateEnergyPrice(mockQuery);
       assert.strictEqual(result, price, `Price ${result} should match simulated price ${price}`);

@@ -19,9 +19,7 @@ describe('Energy Provider Service', () => {
         sandbox = sinon_1.default.createSandbox();
         fetchStub = sandbox.stub(node_fetch_1.default, 'default');
         loggerInfoStub = sandbox.stub(logger_1.default, 'info');
-        console.log('Creating mockQuery before stub:', mockQuery);
         mockQuery = sandbox.stub();
-        console.log('Created mockQuery after stub:', mockQuery);
     });
     afterEach(() => {
         console.log('Restoring sandbox after each test');
@@ -30,17 +28,17 @@ describe('Energy Provider Service', () => {
     describe('simulatePrice', () => {
         it('should return a price between 0.03 and 0.05 for hours 0-5', () => {
             console.log('Running test: should return a price between 0.03 and 0.05');
-            const price = (0, energyProviderService_1.simulatePrice)(3);
+            const price = (0, energyProviderService_1.simulatePrice)(3, false, 'test-seed'); // Utilise une graine fixe pour reproductibilité
             (0, assert_1.default)(price >= 0.03 && price <= 0.05, `Price ${price} should be between 0.03 and 0.05`);
         });
         it('should return a price between 0.06 and 0.09 for hours 6-16', () => {
             console.log('Running test: should return a price between 0.06 and 0.09');
-            const price = (0, energyProviderService_1.simulatePrice)(10);
+            const price = (0, energyProviderService_1.simulatePrice)(10, false, 'test-seed');
             (0, assert_1.default)(price >= 0.06 && price <= 0.09, `Price ${price} should be between 0.06 and 0.09`);
         });
         it('should return a price between 0.10 and 0.15 for hours 17-23', () => {
             console.log('Running test: should return a price between 0.10 and 0.15');
-            const price = (0, energyProviderService_1.simulatePrice)(18);
+            const price = (0, energyProviderService_1.simulatePrice)(18, false, 'test-seed');
             (0, assert_1.default)(price >= 0.10 && price <= 0.15, `Price ${price} should be between 0.10 and 0.15`);
         });
     });
@@ -58,8 +56,7 @@ describe('Energy Provider Service', () => {
         it('should insert a simulated price into the database', async () => {
             console.log('Running test: should insert a simulated price');
             const now = new Date('2025-06-01T03:00:00Z');
-            sandbox.stub(Math, 'random').returns(0.5); // Simuler un prix fixe : 0.04
-            const price = (0, energyProviderService_1.simulatePrice)(3);
+            const price = (0, energyProviderService_1.simulatePrice)(3, false, 'test-seed'); // Prix fixe avec graine
             mockQuery.withArgs('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]).resolves([{ time: now, price }]);
             const result = await (0, energyProviderService_1.updateEnergyPrice)(mockQuery);
             assert_1.default.strictEqual(result, price, `Price ${result} should match simulated price ${price}`);
