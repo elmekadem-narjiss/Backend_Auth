@@ -1,25 +1,58 @@
-const { Sequelize } = require('sequelize');
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DBNAME,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
+});
 
 async function setupDatabase() {
-  const sequelize = new Sequelize({
-    database: process.env.PG_DBNAME || 'energy_db',
-    username: process.env.PG_USER || 'admin',
-    password: process.env.PG_PASSWORD || 'admin123',
-    host: process.env.PG_HOST || 'localhost',
-    port: Number(process.env.PG_PORT) || 5432,
-    dialect: 'postgres',
-    logging: false
-  });
-
+  const client = await pool.connect();
   try {
-    await sequelize.sync({ force: true });
-    console.log('Database initialized successfully');
+    console.log('Initializing database tables...');
+
+    // Créer la table prices
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS prices (
+        id SERIAL PRIMARY KEY,
+        price DECIMAL NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('Table "prices" created or already exists');
+
+    // Créer la table transactions
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        type VARCHAR(10) NOT NULL CHECK (type IN ('buy', 'sell')),
+        quantity INTEGER NOT NULL,
+        profit DECIMAL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('Table "transactions" created or already exists');
+
+    // Créer la table tasks (si nécessaire)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        description TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('Table "tasks" created or already exists');
   } catch (error) {
-    console.error('Failed to initialize database:', error);
-    process.exit(1);
+    console.error('Error initializing database:', error);
+    throw error;
   } finally {
-    await sequelize.close();
+    client.release();
   }
 }
 
-setupDatabase();
+setupDatabase().catch((err) => {
+  console.error('Database setup failed:', err);
+  process.exit(1);
+});

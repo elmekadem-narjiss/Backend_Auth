@@ -52,6 +52,7 @@ const axios_1 = __importStar(require("axios"));
 // Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
 //test declanche
 // Importer le module energyQueue pour démarrer les workers
+// for testing
 require("./queues/energyQueue"); // Importe et exécute le code automatiquement
 // Charger les variables d'environnement
 dotenv_1.default.config();
