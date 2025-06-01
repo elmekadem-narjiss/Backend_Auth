@@ -1,110 +1,96 @@
-import { query } from '../config/postgres';
 import logger from '../config/logger';
+import fetch from 'node-fetch';
 import { Job } from 'bullmq';
 
-// Typage pour les résultats de query
 type QueryResult<T> = T[] | { rows: T[] };
+type QueryFunction = (text: string, params?: any[]) => Promise<QueryResult<any>>;
 
-// Fonction pour simuler les prix de l'énergie
-export const simulatePrice = (currentHour: number): number => {
-  if (currentHour >= 0 && currentHour < 6) {
-    return Math.random() * (0.05 - 0.03) + 0.03;
-  } else if (currentHour >= 6 && currentHour < 17) {
-    return Math.random() * (0.09 - 0.06) + 0.06;
-  } else {
-    return Math.random() * (0.15 - 0.10) + 0.10;
-  }
-};
+export function simulatePrice(hour: number): number {
+  console.log(`simulatePrice called with hour: ${hour}`);
+  if (hour >= 0 && hour <= 5) return Number((Math.random() * (0.05 - 0.03) + 0.03).toFixed(2));
+  if (hour >= 6 && hour <= 16) return Number((Math.random() * (0.09 - 0.06) + 0.06).toFixed(2));
+  return Number((Math.random() * (0.15 - 0.10) + 0.10).toFixed(2));
+}
 
-// Enregistrer un prix simulé dans PostgreSQL
-export const updateEnergyPrice = async () => {
+export async function updateEnergyPrice(query: QueryFunction): Promise<number> {
+  console.log('updateEnergyPrice called');
   const now = new Date();
-  const currentHour = now.getHours();
-  const price = simulatePrice(currentHour);
-  await query('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]);
+  const hour = now.getHours();
+  const price = simulatePrice(hour);
+  console.log(`Executing query with: INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *`, [now, price]);
+  const result = await query('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]) as QueryResult<{ time: Date; price: number }>;
   logger.info(`Prix simulé à ${now.toISOString()}: ${price} €/kWh`);
   return price;
-};
+}
 
-// Récupérer le dernier prix
-export const getLatestPrice = async (): Promise<number> => {
-  const result = await query('SELECT price FROM Prices ORDER BY time DESC LIMIT 1') as QueryResult<{ price: number }>;
-  if (Array.isArray(result) && result.length > 0) {
-    return result[0].price;
-  } else if ('rows' in result && result.rows.length > 0) {
-    return result.rows[0].price;
+export const getLatestPrice = async (query: QueryFunction): Promise<number> => {
+  try {
+    console.log('getLatestPrice called');
+    const result = await query('SELECT price FROM Prices ORDER BY time DESC LIMIT 1');
+    console.log('Executing query with: SELECT price FROM Prices ORDER BY time DESC LIMIT 1');
+    
+    if (Array.isArray(result) && result.length > 0) {
+      return result[0].price;
+    } else if ('rows' in result && Array.isArray(result.rows) && result.rows.length > 0) {
+      return result.rows[0].price;
+    } else {
+      return 0.05;
+    }
+  } catch (error) {
+    throw new Error('Failed to fetch price data');
   }
-  return 0.05; // Valeur par défaut si aucun résultat
 };
 
-// Vérifier et exécuter une transaction automatique
-export const checkAndExecuteTrade = async (job: Job) => {
-  const latestPrice = await getLatestPrice();
-  const response = await fetch('http://localhost:5000/api/evaluate', {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
+export async function checkAndExecuteTrade(job: Job, query: QueryFunction, getLatestPriceFn: (query: QueryFunction) => Promise<number> = getLatestPrice): Promise<void> {
+  console.log('checkAndExecuteTrade called with job:', job);
+  const price = await getLatestPriceFn(query);
+  const socEndpoint = process.env.SOC_ENDPOINT || 'http://localhost:5000/api/evaluate';
+  const response = await fetch(socEndpoint);
   if (!response.ok) {
-    throw new Error(`Failed to fetch SOC: ${response.status} ${response.statusText}`);
+    throw new Error(`Failed to fetch SOC: ${response.statusText}`);
   }
-  const { metrics } = await response.json();
-  const soc = metrics.soc_final || 50;
+  const data = await response.json();
+  const soc = data.metrics.soc_final;
 
-  let transactionType: string | null = null;
-  let quantity = 0;
-  let profit = 0;
-
-  if (latestPrice < 0.05 && soc < 40) {
-    transactionType = 'buy';
-    quantity = Math.min(10, (40 - soc) * 0.95);
-    profit = 0;
-  } else if (latestPrice > 0.12 && soc > 60) {
-    transactionType = 'sell';
-    quantity = Math.min(5, (soc - 60) * 0.95);
-    profit = quantity * (latestPrice - 0.05);
+  if (price <= 0.05 && soc <= 50) {
+    const result = await query('INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *', ['buy', 9.5, price, 0]);
+    logger.info(`Transaction buy exécutée: 9.5 kWh à ${price} €/kWh, profit: 0`);
+  } else if (price >= 0.10 && soc >= 60) {
+    const profit = 9.5 * (price - 0.05);
+    const result = await query('INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *', ['sell', 9.5, price, profit]);
+    logger.info(`Transaction sell exécutée: 9.5 kWh à ${price} €/kWh, profit: ${profit}`);
   }
+}
 
-  if (transactionType) {
-    await query(
-      'INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *',
-      [transactionType, quantity, latestPrice, profit]
-    );
-    logger.info(`Transaction ${transactionType} exécutée: ${quantity} kWh à ${latestPrice} €/kWh, profit: ${profit}`);
-  }
-};
-
-// Exécuter une transaction manuelle
-export const executeManualTrade = async (type: 'buy' | 'sell', quantity: number) => {
-  const latestPrice = await getLatestPrice();
-  const response = await fetch('http://localhost:5000/api/evaluate', {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
+export async function executeManualTrade(type: string, quantity: number, query: QueryFunction, getLatestPriceFn: (query: QueryFunction) => Promise<number> = getLatestPrice): Promise<{ type: string; quantity: number; price: number; profit: number }> {
+  console.log('executeManualTrade called with type:', type, 'quantity:', quantity);
+  const price = await getLatestPriceFn(query);
+  const socEndpoint = process.env.SOC_ENDPOINT || 'http://localhost:5000/api/evaluate';
+  const response = await fetch(socEndpoint);
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to fetch SOC: ${response.status} ${response.statusText} - Response: ${errorText}`);
+    throw new Error(`Failed to fetch SOC: ${response.statusText}`);
   }
-  const { metrics } = await response.json();
-  const soc = metrics.soc_final || 50;
+  const data = await response.json();
+  const soc = data.metrics.soc_final;
 
-  if (type === 'buy' && (latestPrice >= 0.05 || soc >= 80 || quantity > 10)) {
-    throw new Error('Conditions d\'achat non remplies');
+  if (type === 'buy' && price <= 0.05 && soc <= 50) {
+    const result = await query('INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *', [type, quantity, price, 0]);
+    logger.info(`Transaction manuelle buy: ${quantity} kWh à ${price} €/kWh, profit: 0`);
+    return { type, quantity, price, profit: 0 };
+  } else if (type === 'sell' && price >= 0.10 && soc >= 60) {
+    const profit = quantity * (price - 0.05);
+    const result = await query('INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *', [type, quantity, price, profit]);
+    logger.info(`Transaction manuelle sell: ${quantity} kWh à ${price} €/kWh, profit: ${profit}`);
+    return { type, quantity, price, profit };
   }
-  if (type === 'sell' && (latestPrice <= 0.12 || soc <= 60 || quantity > 5)) {
-    throw new Error('Conditions de vente non remplies');
-  }
+  throw new Error(type === 'buy' ? 'Conditions d\'achat non remplies' : 'Conditions de vente non remplies');
+}
 
-  const profit = type === 'sell' ? quantity * (latestPrice - 0.05) : 0;
-  const result = await query(
-    'INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *',
-    [type, quantity, latestPrice, profit]
-  );
-  logger.info(`Transaction manuelle ${type}: ${quantity} kWh à ${latestPrice} €/kWh, profit: ${profit}`);
-  return result[0];
-};
-
-// Récupérer l'historique des transactions
-export const getTransactions = async () => {
-  const result = await query('SELECT * FROM Transactions ORDER BY created_at DESC') as QueryResult<any>;
-  return Array.isArray(result) ? result : result.rows;
-};
+export async function getTransactions(query: QueryFunction): Promise<{ id: number; type: string; quantity: number; price: number }[]> {
+  console.log('getTransactions called');
+  console.log('Executing query with: SELECT * FROM Transactions ORDER BY created_at DESC');
+  const result = await query('SELECT * FROM Transactions ORDER BY created_at DESC') as QueryResult<{ id: number; type: string; quantity: number; price: number }>;
+  if (Array.isArray(result)) return result;
+  if ('rows' in result) return result.rows;
+  return [];
+}

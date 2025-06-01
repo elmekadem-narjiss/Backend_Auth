@@ -49,28 +49,22 @@ const http_1 = require("http");
 const websocketService_1 = require("./services/websocketService");
 const energyProviderService_1 = require("./services/energyProviderService");
 const axios_1 = __importStar(require("axios"));
+const postgres_1 = require("./config/postgres");
 // Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
 //test declanche
-// Importer le module energyQueue pour démarrer les workers
-// for testing
-require("./queues/energyQueue"); // Importe et exécute le code automatiquement
-// Charger les variables d'environnement
+require("./queues/energyQueue");
 dotenv_1.default.config();
-// Initialisation de l'application Express
 const app = (0, express_1.default)();
 exports.app = app;
 const server = (0, http_1.createServer)(app);
 const PORT = process.env.PORT || 5000;
-// Middleware pour CORS
 app.use((0, cors_1.default)({
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type'],
     credentials: true,
 }));
-// Middleware pour parser le JSON
 app.use(express_1.default.json());
-// Route pour exécuter une transaction manuelle
 app.post('/api/energy/trade', async (req, res) => {
     var _a, _b;
     try {
@@ -78,7 +72,6 @@ app.post('/api/energy/trade', async (req, res) => {
         if (!type || !quantity || !['buy', 'sell'].includes(type)) {
             throw new Error('Type ou quantité invalide');
         }
-        // Fetch evaluation data
         let soc;
         try {
             const evaluateResponse = await axios_1.default.get('http://localhost:5000/api/evaluate', { timeout: 5000 });
@@ -98,10 +91,9 @@ app.post('/api/energy/trade', async (req, res) => {
             }
             throw new Error('Failed to fetch SOC data');
         }
-        // Fetch price with error handling
         let price;
         try {
-            price = await (0, energyProviderService_1.getLatestPrice)();
+            price = await (0, energyProviderService_1.getLatestPrice)(postgres_1.query);
             console.log('Price:', price, 'SOC:', soc, 'Quantity:', quantity);
         }
         catch (error) {
@@ -114,18 +106,23 @@ app.post('/api/energy/trade', async (req, res) => {
             throw new Error('Failed to fetch price data');
         }
         if (type === 'buy') {
-            if (price >= 0.05)
+            if (price > 0.05)
                 throw new Error('Prix trop élevé pour acheter');
-            if (soc >= 80)
+            if (soc > 50)
                 throw new Error('SOC trop élevé pour acheter');
             if (quantity > 10)
                 throw new Error('Quantité dépasse la limite d\'achat');
         }
-        if (type === 'sell' && (price <= 0.12 || soc <= 60 || quantity > 5)) {
-            throw new Error('Conditions de vente non remplies');
+        if (type === 'sell') {
+            if (price < 0.10)
+                throw new Error('Prix trop bas pour vendre');
+            if (soc < 60)
+                throw new Error('SOC trop bas pour vendre');
+            if (quantity > 5)
+                throw new Error('Quantité dépasse la limite de vente');
         }
-        const result = await (0, energyProviderService_1.executeManualTrade)(type, quantity);
-        res.json(result);
+        const result = await (0, energyProviderService_1.executeManualTrade)(type, quantity, postgres_1.query);
+        res.status(200).json(result);
     }
     catch (error) {
         if (error instanceof Error) {
@@ -138,7 +135,6 @@ app.post('/api/energy/trade', async (req, res) => {
         }
     }
 });
-// Nouvelle route pour récupérer le SOC
 app.get('/api/energy/soc', async (req, res) => {
     var _a;
     try {
@@ -160,11 +156,10 @@ app.get('/api/energy/soc', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch SOC data' });
     }
 });
-// Route pour récupérer le dernier prix
 app.get('/api/energy/prices', async (req, res) => {
     try {
-        const price = await (0, energyProviderService_1.getLatestPrice)();
-        res.json([{ price }]); // Retourne un tableau [{ price: <valeur> }]
+        const price = await (0, energyProviderService_1.getLatestPrice)(postgres_1.query);
+        res.json([{ price }]);
     }
     catch (error) {
         if (error instanceof Error) {
@@ -175,10 +170,9 @@ app.get('/api/energy/prices', async (req, res) => {
         }
     }
 });
-// Route pour récupérer l'historique des transactions
 app.get('/api/energy/transactions', async (req, res) => {
     try {
-        const transactions = await (0, energyProviderService_1.getTransactions)();
+        const transactions = await (0, energyProviderService_1.getTransactions)(postgres_1.query);
         res.json(transactions);
     }
     catch (error) {
@@ -190,7 +184,6 @@ app.get('/api/energy/transactions', async (req, res) => {
         }
     }
 });
-// Route pour récupérer les résultats d'évaluation
 app.get('/api/evaluate', async (req, res) => {
     try {
         const pythonApiUrl = 'http://localhost:8001/evaluate';
@@ -202,21 +195,17 @@ app.get('/api/evaluate', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-// Routes existantes
 app.use('/api/batteries', batteryRoutes_1.default);
 app.use('/api/predictions', predictions_1.default);
 app.use('/api/equipment', equipment_1.default);
 app.use('/api/tasks', taskRoutes_1.default);
-// Route de test
 app.get('/', (req, res) => {
     res.send('API de gestion BESS et panneaux solaires');
 });
-// Middleware de gestion des erreurs globales
 app.use((err, req, res, next) => {
     console.error('Erreur serveur:', err.message);
     res.status(500).json({ error: 'Erreur interne du serveur' });
 });
-// Démarrer le serveur
 if (require.main === module) {
     const startServer = async () => {
         try {

@@ -42,20 +42,28 @@ const assert_1 = __importDefault(require("assert"));
 const nock_1 = __importDefault(require("nock"));
 const sinon_1 = __importDefault(require("sinon"));
 const energyProviderService = __importStar(require("../src/services/energyProviderService"));
+const node_fetch_1 = __importStar(require("node-fetch")); // Import Response from node-fetch
 describe('Energy API - Trade', () => {
     let getLatestPriceStub;
+    let fetchStub;
     beforeEach(() => {
         // Simuler la réponse de /api/evaluate pour plusieurs appels
         (0, nock_1.default)('http://localhost:5000')
-            .persist() // Permet de réutiliser cette simulation pour plusieurs appels
+            .persist()
             .get('/api/evaluate')
-            .reply(200, { metrics: { soc_final: 75 } });
+            .reply(200, { metrics: { soc_final: 40 } });
+        // Simuler fetch pour éviter les appels réseau réels
+        fetchStub = sinon_1.default.stub(node_fetch_1.default, 'default').resolves(new node_fetch_1.Response(JSON.stringify({ metrics: { soc_final: 40 } }), {
+            status: 200,
+            statusText: 'OK',
+        }));
         // Simuler getLatestPrice avec sinon
         getLatestPriceStub = sinon_1.default.stub(energyProviderService, 'getLatestPrice').resolves(0.04);
     });
     afterEach(() => {
         // Restaurer les stubs et nettoyer nock
         getLatestPriceStub.restore();
+        fetchStub.restore();
         nock_1.default.cleanAll();
     });
     it('should execute a manual trade successfully', async () => {
@@ -66,5 +74,6 @@ describe('Energy API - Trade', () => {
         console.log('Response body:', response.body);
         console.log('Response status:', response.status);
         assert_1.default.strictEqual(response.status, 200, 'Le statut HTTP devrait être 200');
+        assert_1.default.deepStrictEqual(response.body, { type: 'buy', quantity: 5, price: 0.04, profit: 0 }, 'La réponse devrait contenir les détails de la transaction');
     });
 });
