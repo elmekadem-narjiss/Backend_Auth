@@ -70,7 +70,7 @@ app.post('/api/energy/trade', async (req: Request, res: Response) => {
     }
 
     if (type === 'buy') {
-      if (price > 0.05) throw new Error('Prix trop élevé pour acheter');
+      if (price > 0.20) throw new Error('Prix trop élevé pour acheter');
       if (soc > 50) throw new Error('SOC trop élevé pour acheter');
       if (quantity > 10) throw new Error('Quantité dépasse la limite d\'achat');
     }

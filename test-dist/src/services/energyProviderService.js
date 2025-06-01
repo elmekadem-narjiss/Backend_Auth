@@ -96,7 +96,7 @@ async function executeManualTrade(type, quantity, query, getLatestPriceFn = expo
     }
     const data = await response.json();
     const soc = data.metrics.soc_final;
-    if (type === 'buy' && price <= 0.05 && soc <= 50) {
+    if (type === 'buy' && price <= 0.20 && soc <= 50) {
         const result = await query('INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *', [type, quantity, price, 0]);
         logger_1.default.info(`Transaction manuelle buy: ${quantity} kWh à ${price} €/kWh, profit: 0`);
         return { type, quantity, price, profit: 0 };

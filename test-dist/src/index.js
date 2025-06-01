@@ -106,7 +106,7 @@ app.post('/api/energy/trade', async (req, res) => {
             throw new Error('Failed to fetch price data');
         }
         if (type === 'buy') {
-            if (price > 0.05)
+            if (price > 0.20)
                 throw new Error('Prix trop élevé pour acheter');
             if (soc > 50)
                 throw new Error('SOC trop élevé pour acheter');
