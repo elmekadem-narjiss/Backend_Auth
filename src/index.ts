@@ -13,7 +13,7 @@ import axios, { AxiosError } from 'axios';
 import { query } from './config/postgres';
 
 // Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
-//test declanche
+//declanch
 import './queues/energyQueue';
 
 dotenv.config();
