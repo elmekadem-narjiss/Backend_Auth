@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactions = exports.executeManualTrade = exports.checkAndExecuteTrade = exports.getLatestPrice = exports.updateEnergyPrice = void 0;
+exports.getTransactions = exports.executeManualTrade = exports.checkAndExecuteTrade = exports.getLatestPrice = exports.updateEnergyPrice = exports.simulatePrice = void 0;
 const postgres_1 = require("../config/postgres");
 const logger_1 = __importDefault(require("../config/logger"));
 // Fonction pour simuler les prix de l'énergie
@@ -18,11 +18,12 @@ const simulatePrice = (currentHour) => {
         return Math.random() * (0.15 - 0.10) + 0.10;
     }
 };
+exports.simulatePrice = simulatePrice;
 // Enregistrer un prix simulé dans PostgreSQL
 const updateEnergyPrice = async () => {
     const now = new Date();
     const currentHour = now.getHours();
-    const price = simulatePrice(currentHour);
+    const price = (0, exports.simulatePrice)(currentHour);
     await (0, postgres_1.query)('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]);
     logger_1.default.info(`Prix simulé à ${now.toISOString()}: ${price} €/kWh`);
     return price;
@@ -31,7 +32,13 @@ exports.updateEnergyPrice = updateEnergyPrice;
 // Récupérer le dernier prix
 const getLatestPrice = async () => {
     const result = await (0, postgres_1.query)('SELECT price FROM Prices ORDER BY time DESC LIMIT 1');
-    return result.length > 0 ? result[0].price : 0.05;
+    if (Array.isArray(result) && result.length > 0) {
+        return result[0].price;
+    }
+    else if ('rows' in result && result.rows.length > 0) {
+        return result.rows[0].price;
+    }
+    return 0.05; // Valeur par défaut si aucun résultat
 };
 exports.getLatestPrice = getLatestPrice;
 // Vérifier et exécuter une transaction automatique
@@ -73,7 +80,7 @@ const executeManualTrade = async (type, quantity) => {
         headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
-        const errorText = await response.text(); // Récupérer le texte brut pour débogage
+        const errorText = await response.text();
         throw new Error(`Failed to fetch SOC: ${response.status} ${response.statusText} - Response: ${errorText}`);
     }
     const { metrics } = await response.json();
@@ -92,6 +99,7 @@ const executeManualTrade = async (type, quantity) => {
 exports.executeManualTrade = executeManualTrade;
 // Récupérer l'historique des transactions
 const getTransactions = async () => {
-    return await (0, postgres_1.query)('SELECT * FROM Transactions ORDER BY created_at DESC');
+    const result = await (0, postgres_1.query)('SELECT * FROM Transactions ORDER BY created_at DESC');
+    return Array.isArray(result) ? result : result.rows;
 };
 exports.getTransactions = getTransactions;

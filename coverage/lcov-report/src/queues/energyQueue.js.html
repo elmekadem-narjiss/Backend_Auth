@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">48.57% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>28/35</span>
+                <span class='fraction'>17/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">47.36% </span>
+                <span class="strong">31.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>9/19</span>
+                <span class='fraction'>6/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">40% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/5</span>
+                <span class='fraction'>2/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">48.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>28/35</span>
+                <span class='fraction'>17/35</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -146,11 +146,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -161,16 +161,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -209,12 +209,12 @@ redis_1.energyTradeQueue.add('check-trade', {}, {
     repeat: { every: 15 * 60 * 1000 }, // 15 minutes (900 000 ms)
 });
 // Worker pour traiter les mises à jour des prix
-new bullmq_1.Worker('energy-prices', async (job) =&gt; {
-    logger_1.default.info(`Worker energy-prices processing job: ${job.name} at ${new Date().toISOString()}`);
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (job.name === 'update-price') {
-        try {
-            const price = await (0, energyProviderService_1.updateEnergyPrice)();
-            logger_1.default.info(`Prix mis à jour avec succès: ${price} €/kWh at ${new Date().toISOString()}`);
+new bullmq_1.Worker('energy-prices', <span class="fstat-no" title="function not covered" >as</span>ync (job) =&gt; {
+<span class="cstat-no" title="statement not covered" >    logger_1.default.info(`Worker energy-prices processing job: ${job.name} at ${new Date().toISOString()}`);</span>
+<span class="cstat-no" title="statement not covered" >    if (job.name === 'update-price') {</span>
+<span class="cstat-no" title="statement not covered" >        try {</span>
+            const price = <span class="cstat-no" title="statement not covered" >await (0, energyProviderService_1.updateEnergyPrice)();</span>
+<span class="cstat-no" title="statement not covered" >            logger_1.default.info(`Prix mis à jour avec succès: ${price} €/kWh at ${new Date().toISOString()}`);</span>
         }
         catch (error) {
             // Typage explicite et gestion sécurisée
@@ -224,17 +224,17 @@ new bullmq_1.Worker('energy-prices', async (job) =&gt; {
     }
 }, { connection: redis_1.energyPriceQueue.opts.connection });
 // Worker pour traiter les transactions automatiques
-new bullmq_1.Worker('energy-trades', async (job) =&gt; {
-    logger_1.default.info(`Worker energy-trades processing job: ${job.name} at ${new Date().toISOString()}`);
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (job.name === 'check-trade') {
-        try {
-            await (0, energyProviderService_1.checkAndExecuteTrade)(job);
+new bullmq_1.Worker('energy-trades', <span class="fstat-no" title="function not covered" >as</span>ync (job) =&gt; {
+<span class="cstat-no" title="statement not covered" >    logger_1.default.info(`Worker energy-trades processing job: ${job.name} at ${new Date().toISOString()}`);</span>
+<span class="cstat-no" title="statement not covered" >    if (job.name === 'check-trade') {</span>
+<span class="cstat-no" title="statement not covered" >        try {</span>
+<span class="cstat-no" title="statement not covered" >            await (0, energyProviderService_1.checkAndExecuteTrade)(job);</span>
 <span class="cstat-no" title="statement not covered" >            logger_1.default.info(`Vérification des transactions terminée at ${new Date().toISOString()}`);</span>
         }
         catch (error) {
             // Typage explicite et gestion sécurisée
-            const errorMessage = error instanceof Error ? error.message : <span class="branch-1 cbranch-no" title="branch not covered" >'Erreur inconnue';</span>
-            logger_1.default.error(`Erreur lors de la vérification des transactions: ${errorMessage}`);
+            const errorMessage = <span class="cstat-no" title="statement not covered" >error instanceof Error ? error.message : 'Erreur inconnue';</span>
+<span class="cstat-no" title="statement not covered" >            logger_1.default.error(`Erreur lors de la vérification des transactions: ${errorMessage}`);</span>
         }
     }
 }, { connection: redis_1.energyTradeQueue.opts.connection });
@@ -262,7 +262,7 @@ initializePriceUpdate().catch(<span class="fstat-no" title="function not covered
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-01T01:02:30.675Z
+                at 2025-06-01T02:17:17.296Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

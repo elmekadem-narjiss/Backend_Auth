@@ -2,8 +2,11 @@ import { query } from '../config/postgres';
 import logger from '../config/logger';
 import { Job } from 'bullmq';
 
+// Typage pour les résultats de query
+type QueryResult<T> = T[] | { rows: T[] };
+
 // Fonction pour simuler les prix de l'énergie
-const simulatePrice = (currentHour: number): number => {
+export const simulatePrice = (currentHour: number): number => {
   if (currentHour >= 0 && currentHour < 6) {
     return Math.random() * (0.05 - 0.03) + 0.03;
   } else if (currentHour >= 6 && currentHour < 17) {
@@ -25,8 +28,13 @@ export const updateEnergyPrice = async () => {
 
 // Récupérer le dernier prix
 export const getLatestPrice = async (): Promise<number> => {
-  const result = await query('SELECT price FROM Prices ORDER BY time DESC LIMIT 1');
-  return result.length > 0 ? result[0].price : 0.05;
+  const result = await query('SELECT price FROM Prices ORDER BY time DESC LIMIT 1') as QueryResult<{ price: number }>;
+  if (Array.isArray(result) && result.length > 0) {
+    return result[0].price;
+  } else if ('rows' in result && result.rows.length > 0) {
+    return result.rows[0].price;
+  }
+  return 0.05; // Valeur par défaut si aucun résultat
 };
 
 // Vérifier et exécuter une transaction automatique
@@ -73,7 +81,7 @@ export const executeManualTrade = async (type: 'buy' | 'sell', quantity: number)
     headers: { 'Content-Type': 'application/json' },
   });
   if (!response.ok) {
-    const errorText = await response.text(); // Récupérer le texte brut pour débogage
+    const errorText = await response.text();
     throw new Error(`Failed to fetch SOC: ${response.status} ${response.statusText} - Response: ${errorText}`);
   }
   const { metrics } = await response.json();
@@ -97,5 +105,6 @@ export const executeManualTrade = async (type: 'buy' | 'sell', quantity: number)
 
 // Récupérer l'historique des transactions
 export const getTransactions = async () => {
-  return await query('SELECT * FROM Transactions ORDER BY created_at DESC');
+  const result = await query('SELECT * FROM Transactions ORDER BY created_at DESC') as QueryResult<any>;
+  return Array.isArray(result) ? result : result.rows;
 };

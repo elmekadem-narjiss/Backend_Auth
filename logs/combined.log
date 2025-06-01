@@ -198,3 +198,16 @@
 {"level":"info","message":"Prix initialisé avec succès: 0.04324536237293554 €/kWh","timestamp":"2025-06-01T01:02:29.023Z"}
 {"level":"error","message":"Erreur lors de la vérification des transactions: fetch failed","timestamp":"2025-06-01T01:02:29.050Z"}
 {"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.04 €/kWh, profit: 0","timestamp":"2025-06-01T01:02:29.684Z"}
+{"level":"info","message":"Initialisation immédiate des prix à 2025-06-01T02:15:58.534Z","timestamp":"2025-06-01T02:15:58.536Z"}
+{"level":"info","message":"Worker energy-prices processing job: update-price at 2025-06-01T02:15:59.434Z","timestamp":"2025-06-01T02:15:59.434Z"}
+{"level":"info","message":"Worker energy-trades processing job: check-trade at 2025-06-01T02:15:59.451Z","timestamp":"2025-06-01T02:15:59.452Z"}
+{"level":"info","message":"Prix simulé à 2025-06-01T02:15:58.541Z: 0.047927755119369746 €/kWh","timestamp":"2025-06-01T02:15:59.583Z"}
+{"level":"info","message":"Prix initialisé avec succès: 0.047927755119369746 €/kWh","timestamp":"2025-06-01T02:15:59.584Z"}
+{"level":"info","message":"Prix simulé à 2025-06-01T02:15:59.436Z: 0.0391649189281698 €/kWh","timestamp":"2025-06-01T02:15:59.586Z"}
+{"level":"info","message":"Prix mis à jour avec succès: 0.0391649189281698 €/kWh at 2025-06-01T02:15:59.587Z","timestamp":"2025-06-01T02:15:59.587Z"}
+{"level":"error","message":"Erreur lors de la vérification des transactions: fetch failed","timestamp":"2025-06-01T02:15:59.601Z"}
+{"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.04 €/kWh, profit: 0","timestamp":"2025-06-01T02:15:59.946Z"}
+{"level":"info","message":"Initialisation immédiate des prix à 2025-06-01T02:17:15.891Z","timestamp":"2025-06-01T02:17:15.893Z"}
+{"level":"info","message":"Prix simulé à 2025-06-01T02:17:15.896Z: 0.03032553672859452 €/kWh","timestamp":"2025-06-01T02:17:16.651Z"}
+{"level":"info","message":"Prix initialisé avec succès: 0.03032553672859452 €/kWh","timestamp":"2025-06-01T02:17:16.653Z"}
+{"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.04 €/kWh, profit: 0","timestamp":"2025-06-01T02:17:17.043Z"}

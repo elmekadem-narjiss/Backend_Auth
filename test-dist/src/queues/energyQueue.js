@@ -3,62 +3,63 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.addPriceUpdateJob = exports.priceUpdateWorker = exports.energyPriceQueue = exports.simulatePrice = void 0;
 const bullmq_1 = require("bullmq");
-const redis_1 = require("../config/redis");
-const energyProviderService_1 = require("../services/energyProviderService");
-const logger_1 = __importDefault(require("../config/logger"));
-// Planifier la mise à jour des prix toutes les 15 minutes
-redis_1.energyPriceQueue.add('update-price', {}, {
-    repeat: { every: 15 * 60 * 1000 }, // 15 minutes (900 000 ms)
+const crypto_1 = __importDefault(require("crypto"));
+// Définir une file d'attente pour les mises à jour des prix
+const energyPriceQueue = new bullmq_1.Queue('energy-price-updates', {
+    connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+    },
 });
-// Planifier la vérification des transactions toutes les 15 minutes
-redis_1.energyTradeQueue.add('check-trade', {}, {
-    repeat: { every: 15 * 60 * 1000 }, // 15 minutes (900 000 ms)
-});
-// Worker pour traiter les mises à jour des prix
-new bullmq_1.Worker('energy-prices', async (job) => {
-    logger_1.default.info(`Worker energy-prices processing job: ${job.name} at ${new Date().toISOString()}`);
-    if (job.name === 'update-price') {
-        try {
-            const price = await (0, energyProviderService_1.updateEnergyPrice)();
-            logger_1.default.info(`Prix mis à jour avec succès: ${price} €/kWh at ${new Date().toISOString()}`);
-        }
-        catch (error) {
-            // Typage explicite et gestion sécurisée
-            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-            logger_1.default.error(`Erreur lors de la mise à jour du prix: ${errorMessage}`);
-        }
+exports.energyPriceQueue = energyPriceQueue;
+// Fonction pour simuler les prix de l'énergie de manière sécurisée
+const simulatePrice = (currentHour) => {
+    // Utiliser crypto.getRandomValues pour générer un nombre aléatoire sécurisé
+    const array = new Uint32Array(1);
+    crypto_1.default.getRandomValues(array);
+    const randomValue = array[0] / (0xFFFFFFFF + 1); // Normaliser entre 0 et 1
+    if (currentHour >= 0 && currentHour < 6) {
+        return randomValue * (0.05 - 0.03) + 0.03;
     }
-}, { connection: redis_1.energyPriceQueue.opts.connection });
-// Worker pour traiter les transactions automatiques
-new bullmq_1.Worker('energy-trades', async (job) => {
-    logger_1.default.info(`Worker energy-trades processing job: ${job.name} at ${new Date().toISOString()}`);
-    if (job.name === 'check-trade') {
-        try {
-            await (0, energyProviderService_1.checkAndExecuteTrade)(job);
-            logger_1.default.info(`Vérification des transactions terminée at ${new Date().toISOString()}`);
-        }
-        catch (error) {
-            // Typage explicite et gestion sécurisée
-            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-            logger_1.default.error(`Erreur lors de la vérification des transactions: ${errorMessage}`);
-        }
+    else if (currentHour >= 6 && currentHour < 17) {
+        return randomValue * (0.09 - 0.06) + 0.06;
     }
-}, { connection: redis_1.energyTradeQueue.opts.connection });
-// Démarrer immédiatement une mise à jour pour aligner avec l'heure actuelle
-const initializePriceUpdate = async () => {
-    logger_1.default.info(`Initialisation immédiate des prix à ${new Date().toISOString()}`);
-    try {
-        const price = await (0, energyProviderService_1.updateEnergyPrice)();
-        logger_1.default.info(`Prix initialisé avec succès: ${price} €/kWh`);
-    }
-    catch (error) {
-        // Typage explicite et gestion sécurisée
-        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-        logger_1.default.error(`Erreur lors de l'initialisation: ${errorMessage}`);
+    else {
+        return randomValue * (0.15 - 0.10) + 0.10;
     }
 };
-initializePriceUpdate().catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-    logger_1.default.error(`Erreur lors de l'initialisation: ${errorMessage}`);
+exports.simulatePrice = simulatePrice;
+// Worker pour traiter les mises à jour des prix
+const priceUpdateWorker = new bullmq_1.Worker('energy-price-updates', async (job) => {
+    const { currentHour } = job.data;
+    const price = (0, exports.simulatePrice)(currentHour);
+    console.log(`Price updated for hour ${currentHour}: ${price}`);
+    return price;
+}, {
+    connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+    },
 });
+exports.priceUpdateWorker = priceUpdateWorker;
+// Gestion des événements du Worker
+priceUpdateWorker.on('completed', (job) => {
+    console.log(`Job ${job.id} completed with result: ${job.returnvalue}`);
+});
+priceUpdateWorker.on('failed', (job, err) => {
+    console.error(`Job ${job === null || job === void 0 ? void 0 : job.id} failed with error: ${err.message}`);
+});
+// Ajouter un job à la file d'attente (exemple d'utilisation)
+const addPriceUpdateJob = async (currentHour) => {
+    await energyPriceQueue.add('update-price', { currentHour });
+};
+exports.addPriceUpdateJob = addPriceUpdateJob;
+// Exécuter un exemple de job lors du démarrage (facultatif, peut être supprimé si non nécessaire)
+if (process.env.NODE_ENV !== 'test') {
+    const currentHour = new Date().getHours();
+    addPriceUpdateJob(currentHour)
+        .then(() => console.log('Price update job added'))
+        .catch((err) => console.error('Error adding price update job:', err));
+}
