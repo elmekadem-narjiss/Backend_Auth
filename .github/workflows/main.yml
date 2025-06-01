@@ -368,6 +368,9 @@ jobs:
       - name: Debug Server Logs
         if: always()
         run: cat server.log || echo "Server log not found"
+      - name: Generate Random ID
+        id: random
+        run: echo "RANDOM_ID=$(date +%s%N | sha256sum | head -c 8)" >> $GITHUB_ENV
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
@@ -384,6 +387,7 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.ts
             -Dsonar.exclusions=node_modules/**,dist/**,test-dist/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.projectName="Backend Build with Sonar_${{ env.RANDOM_ID }}"
       - name: Check SonarCloud Output
         if: failure()
         run: echo "SonarCloud scan failed. Check the output above for details." && exit 1
