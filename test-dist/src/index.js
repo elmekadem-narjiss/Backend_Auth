@@ -51,7 +51,7 @@ const energyProviderService_1 = require("./services/energyProviderService");
 const axios_1 = __importStar(require("axios"));
 const postgres_1 = require("./config/postgres");
 // Ajout d'un commentaire pour déclencher une nouvelle analyse SonarCloud
-//test declanche
+//declanch
 require("./queues/energyQueue");
 dotenv_1.default.config();
 const app = (0, express_1.default)();

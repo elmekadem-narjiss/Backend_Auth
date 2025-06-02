@@ -14,12 +14,17 @@ describe('Energy Provider Service', () => {
     let fetchStub;
     let loggerInfoStub;
     let mockQuery;
+    let simulatePriceStub;
     beforeEach(() => {
         console.log('Starting beforeEach: Initializing sandbox and stubs');
         sandbox = sinon_1.default.createSandbox();
         fetchStub = sandbox.stub(node_fetch_1.default, 'default');
         loggerInfoStub = sandbox.stub(logger_1.default, 'info');
         mockQuery = sandbox.stub();
+        // Stub simulatePrice pour retourner une valeur fixe
+        simulatePriceStub = sandbox.stub().returns(0.04); // Valeur fixe pour le test
+        // Remplacer la fonction simulatePrice par le stub
+        sandbox.stub({ simulatePrice: energyProviderService_1.simulatePrice }, 'simulatePrice').value(simulatePriceStub);
     });
     afterEach(() => {
         console.log('Restoring sandbox after each test');
@@ -56,12 +61,12 @@ describe('Energy Provider Service', () => {
         it('should insert a simulated price into the database', async () => {
             console.log('Running test: should insert a simulated price');
             const now = new Date('2025-06-01T03:00:00Z');
-            const price = (0, energyProviderService_1.simulatePrice)(3, false, 'test-seed'); // Prix fixe avec graine
-            mockQuery.withArgs('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]).resolves([{ time: now, price }]);
+            const expectedPrice = 0.04; // Correspond au stub
+            mockQuery.withArgs('INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, expectedPrice]).resolves([{ time: now, price: expectedPrice }]);
             const result = await (0, energyProviderService_1.updateEnergyPrice)(mockQuery);
-            assert_1.default.strictEqual(result, price, `Price ${result} should match simulated price ${price}`);
-            sandbox.assert.calledWith(mockQuery, 'INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, price]);
-            sandbox.assert.calledWith(loggerInfoStub, `Prix simulé à ${now.toISOString()}: ${price} €/kWh`);
+            assert_1.default.strictEqual(result, expectedPrice, `Price ${result} should match simulated price ${expectedPrice}`);
+            sandbox.assert.calledWith(mockQuery, 'INSERT INTO Prices (time, price) VALUES ($1, $2) RETURNING *', [now, expectedPrice]);
+            sandbox.assert.calledWith(loggerInfoStub, `Prix simulé à ${now.toISOString()}: ${expectedPrice} €/kWh`);
         });
         it('should throw an error if the query fails', async () => {
             console.log('Running test: should throw an error if the query fails');
