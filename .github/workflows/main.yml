@@ -39,7 +39,6 @@ jobs:
             echo "Error: dist/index.js not found"
             exit 1
           fi
-
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -263,5 +262,3 @@ jobs:
       - name: Check Integration Output
         if: failure()
         run: echo "Integration tests failed. Check the output above for details." && exit 1
-
-  
