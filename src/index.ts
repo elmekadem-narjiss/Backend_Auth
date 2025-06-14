@@ -6,6 +6,8 @@ import batteryRoutes from './routes/batteryRoutes';
 import predictionsRouter from './routes/predictions';
 import equipmentRoutes from './routes/equipment';
 import taskRoutes from './routes/taskRoutes';
+import settingsRoutes from './routes/settings';
+import retrainRoutes from './routes/retrain';
 import { createServer } from 'http';
 import { startWebSocketServer } from './services/websocketService';
 import { executeManualTrade, getLatestPrice, getTransactions } from './services/energyProviderService';
@@ -41,18 +43,12 @@ app.post('/api/energy/trade', async (req: Request, res: Response) => {
     let soc;
     try {
       const evaluateResponse = await axios.get('http://localhost:5000/api/evaluate', { timeout: 5000 });
-      console.log('Evaluate Response:', evaluateResponse.data);
       const { metrics } = evaluateResponse.data;
       if (!metrics || typeof metrics.soc_final !== 'number') {
         throw new Error('Invalid metrics data');
       }
       soc = metrics.soc_final;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.error('Error fetching /api/evaluate:', error.message, 'Response:', error.response?.data);
-      } else {
-        console.error('Error fetching /api/evaluate:', error);
-      }
       throw new Error('Failed to fetch SOC data');
     }
 
@@ -61,11 +57,6 @@ app.post('/api/energy/trade', async (req: Request, res: Response) => {
       price = await getLatestPrice(query);
       console.log('Price:', price, 'SOC:', soc, 'Quantity:', quantity);
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.error('Error fetching price:', error.message, 'Response:', error.response?.data);
-      } else {
-        console.error('Error fetching price:', error);
-      }
       throw new Error('Failed to fetch price data');
     }
 
@@ -76,8 +67,8 @@ app.post('/api/energy/trade', async (req: Request, res: Response) => {
     }
     if (type === 'sell') {
       if (price < 0.10) throw new Error('Prix trop bas pour vendre');
-      if (soc < 60) throw new Error('SOC trop bas pour vendre');
-      if (quantity > 5) throw new Error('Quantité dépasse la limite de vente');
+      if (soc < 50) throw new Error('SOC trop bas pour vendre'); // Réduit de 60 à 50
+      if (quantity > 10) throw new Error('Quantité dépasse la limite de vente'); // Augmenté de 5 à 10
     }
 
     const result = await executeManualTrade(type, quantity, query);
@@ -87,7 +78,6 @@ app.post('/api/energy/trade', async (req: Request, res: Response) => {
       console.error('Erreur lors de la transaction:', error.message);
       res.status(400).json({ error: error.message });
     } else {
-      console.error('Erreur lors de la transaction:', error);
       res.status(400).json({ error: 'Unknown error during transaction' });
     }
   }
@@ -153,6 +143,8 @@ app.use('/api/batteries', batteryRoutes);
 app.use('/api/predictions', predictionsRouter);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/retrain', retrainRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API de gestion BESS et panneaux solaires');

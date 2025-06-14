@@ -100,10 +100,27 @@ export const taskService = {
 
   deleteTask: async (id: number): Promise<void> => {
     try {
+      if (!Number.isInteger(id) || id <= 0 || isNaN(id)) {
+        throw new Error('Invalid task ID');
+      }
       const result = await pool.query('DELETE FROM tasks WHERE id = $1', [id]);
       if (result.rowCount === 0) throw new Error('Task not found');
     } catch (error) {
+      console.error('Error in deleteTask:', error);
       throw new Error(`Failed to delete task: ${(error as Error).message}`);
     }
   },
+
+  clearTasks: async (): Promise<void> => {
+    try {
+      await pool.query('ALTER TABLE tasks DISABLE TRIGGER ALL');
+      await pool.query('TRUNCATE TABLE tasks RESTART IDENTITY');
+      await pool.query('ALTER TABLE tasks ENABLE TRIGGER ALL');
+      console.log('All tasks cleared successfully');
+    } catch (error) {
+      console.error('Error in clearTasks:', error);
+      throw new Error(`Failed to clear tasks: ${(error as Error).message}`);
+    }
+  },
+
 };

@@ -78,6 +78,7 @@ export async function checkAndExecuteTrade(job: Job, query: QueryFunction, getLa
   }
 }
 
+// src/services/energyProviderService.ts
 export async function executeManualTrade(type: string, quantity: number, query: QueryFunction, getLatestPriceFn: (query: QueryFunction) => Promise<number> = getLatestPrice): Promise<{ type: string; quantity: number; price: number; profit: number }> {
   console.log('executeManualTrade called with type:', type, 'quantity:', quantity);
   const price = await getLatestPriceFn(query);
@@ -89,11 +90,11 @@ export async function executeManualTrade(type: string, quantity: number, query: 
   const data = await response.json();
   const soc = data.metrics.soc_final;
 
-  if (type === 'buy' && price <= 0.05 && soc <= 50) {
+  if (type === 'buy' && price <= 0.20 && soc <= 50) {
     const result = await query('INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *', [type, quantity, price, 0]);
     logger.info(`Transaction manuelle buy: ${quantity} kWh à ${price} €/kWh, profit: 0`);
     return { type, quantity, price, profit: 0 };
-  } else if (type === 'sell' && price >= 0.10 && soc >= 60) {
+  } else if (type === 'sell' && price >= 0.10 && soc >= 50) { // Réduit de 60 à 50
     const profit = quantity * (price - 0.05);
     const result = await query('INSERT INTO Transactions (type, quantity, price, profit) VALUES ($1, $2, $3, $4) RETURNING *', [type, quantity, price, profit]);
     logger.info(`Transaction manuelle sell: ${quantity} kWh à ${price} €/kWh, profit: ${profit}`);
@@ -101,7 +102,6 @@ export async function executeManualTrade(type: string, quantity: number, query: 
   }
   throw new Error(type === 'buy' ? 'Conditions d\'achat non remplies' : 'Conditions de vente non remplies');
 }
-
 export async function getTransactions(query: QueryFunction): Promise<{ id: number; type: string; quantity: number; price: number }[]> {
   console.log('getTransactions called');
   console.log('Executing query with: SELECT * FROM Transactions ORDER BY created_at DESC');

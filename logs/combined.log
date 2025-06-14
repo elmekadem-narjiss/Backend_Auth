@@ -255,3 +255,7 @@
 {"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.04 €/kWh, profit: 0","timestamp":"2025-06-02T00:20:25.662Z"}
 {"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.04 €/kWh, profit: 0","timestamp":"2025-06-02T00:21:39.047Z"}
 {"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.04 €/kWh, profit: 0","timestamp":"2025-06-02T00:22:10.977Z"}
+{"level":"info","message":"Transaction manuelle buy: 2 kWh à 0.13 €/kWh, profit: 0","timestamp":"2025-06-02T01:21:26.629Z"}
+{"level":"info","message":"Transaction manuelle sell: 10 kWh à 0.13 €/kWh, profit: 0.8","timestamp":"2025-06-02T01:34:15.715Z"}
+{"level":"info","message":"Transaction manuelle buy: 5 kWh à 0.13 €/kWh, profit: 0","timestamp":"2025-06-10T14:16:45.193Z"}
+{"level":"info","message":"Transaction manuelle sell: 10 kWh à 0.13 €/kWh, profit: 0.8","timestamp":"2025-06-10T14:17:12.168Z"}
