@@ -55,6 +55,7 @@ jobs:
           MESSAGE="Etape de build terminee a $(date -u)"
           JSON_EVENTS="[{\"timestamp\": $(date -u +%s%3N), \"message\": \"${MESSAGE}\"}]"
           echo "JSON à envoyer : $JSON_EVENTS"
+          aws logs create-log-group --log-group-name ${{ env.LOG_GROUP_NAME }} || true
           aws logs create-log-stream --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/build || true
           aws logs put-log-events --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/build --log-events "$JSON_EVENTS"
         if: always()
@@ -148,6 +149,7 @@ jobs:
           MESSAGE="Etape de test terminee a $(date -u)"
           JSON_EVENTS="[{\"timestamp\": $(date -u +%s%3N), \"message\": \"${MESSAGE}\"}]"
           echo "JSON à envoyer : $JSON_EVENTS"
+          aws logs create-log-group --log-group-name ${{ env.LOG_GROUP_NAME }} || true
           aws logs create-log-stream --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/test || true
           aws logs put-log-events --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/test --log-events "$JSON_EVENTS"
         if: always()
@@ -236,6 +238,7 @@ jobs:
           MESSAGE="Etape de performance terminee a $(date -u)"
           JSON_EVENTS="[{\"timestamp\": $(date -u +%s%3N), \"message\": \"${MESSAGE}\"}]"
           echo "JSON à envoyer : $JSON_EVENTS"
+          aws logs create-log-group --log-group-name ${{ env.LOG_GROUP_NAME }} || true
           aws logs create-log-stream --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/performance || true
           aws logs put-log-events --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/performance --log-events "$JSON_EVENTS"
         if: always()
@@ -327,6 +330,7 @@ jobs:
           MESSAGE="Etape d'integration terminee a $(date -u)"
           JSON_EVENTS="[{\"timestamp\": $(date -u +%s%3N), \"message\": \"${MESSAGE}\"}]"
           echo "JSON à envoyer : $JSON_EVENTS"
+          aws logs create-log-group --log-group-name ${{ env.LOG_GROUP_NAME }} || true
           aws logs create-log-stream --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/integration || true
           aws logs put-log-events --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/integration --log-events "$JSON_EVENTS"
         if: always()
@@ -357,6 +361,7 @@ jobs:
           MESSAGE="Deploiement Amplify termine a $(date -u)"
           JSON_EVENTS="[{\"timestamp\": $(date -u +%s%3N), \"message\": \"${MESSAGE}\"}]"
           echo "JSON à envoyer : $JSON_EVENTS"
+          aws logs create-log-group --log-group-name ${{ env.LOG_GROUP_NAME }} || true
           aws logs create-log-stream --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/deploy || true
           aws logs put-log-events --log-group-name ${{ env.LOG_GROUP_NAME }} --log-stream-name ${{ github.run_id }}/deploy --log-events "$JSON_EVENTS"
         if: always()
