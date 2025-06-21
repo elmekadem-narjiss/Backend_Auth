@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
   schedule:
-    - cron: '0 */3 * * *'  # Exécuter toutes les 3 heures (0h, 3h, 6h, 9h, 12h, 15h, 18h, 21h UTC)
+    - cron: '0 */3 * * *'  # Exécuter toutes les 3 heures
 
 env:
   PG_DBNAME: energy_db
@@ -21,6 +21,8 @@ env:
   REDIS_PORT: 6379
   AWS_REGION: 'eu-north-1'  # Ajustez selon votre région
   LOG_GROUP_NAME: '/github/actions/backend'  # Groupe de journaux spécifique au backend
+  S3_BUCKET_NAME: 'my-frontend-builds-2025'  # Réutilise le bucket du frontend
+  SNS_TOPIC_ARN: ${{ secrets.SNS_TOPIC_ARN }}  # Réutilise le topic SNS existant
 
 jobs:
   build:
@@ -50,6 +52,16 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+      - name: Afficher les variables pour débogage S3
+        run: |
+          echo "Bucket S3 : ${{ env.S3_BUCKET_NAME }}"
+          echo "Région AWS : ${{ env.AWS_REGION }}"
+      - name: Téléverser les artefacts sur S3
+        run: |
+          echo "Commande S3 : aws s3 cp dist/ s3://${{ env.S3_BUCKET_NAME }}/build-artifacts/backend/ --recursive"
+          aws s3 cp dist/ s3://${{ env.S3_BUCKET_NAME }}/build-artifacts/backend/ --recursive
+      - name: Vérifier le résultat S3
+        run: aws s3 ls s3://${{ env.S3_BUCKET_NAME }}/build-artifacts/backend/ || echo "Échec de la vérification S3"
       - name: Envoyer les journaux de build à CloudWatch
         run: |
           MESSAGE="Etape de build terminee a $(date -u)"
@@ -356,6 +368,20 @@ jobs:
             --app-id ${{ secrets.AMPLIFY_APP_ID_BACKEND }} \
             --branch-name main \
             --job-type RELEASE
+      - name: Afficher les variables pour débogage SNS
+        run: |
+          echo "ARN SNS : ${{ env.SNS_TOPIC_ARN }}"
+          echo "Message à envoyer : Déploiement Backend terminé avec succès à $(date -u)"
+      - name: Envoyer une notification SNS en cas de succès
+        run: |
+          echo "Commande SNS : aws sns publish --topic-arn ${{ env.SNS_TOPIC_ARN }} --message \"Déploiement Backend terminé avec succès à $(date -u)\""
+          aws sns publish --topic-arn ${{ env.SNS_TOPIC_ARN }} --message "Déploiement Backend terminé avec succès à $(date -u)" --output json
+        if: success()
+      - name: Envoyer une notification SNS en cas d'échec
+        run: |
+          echo "Commande SNS : aws sns publish --topic-arn ${{ env.SNS_TOPIC_ARN }} --message \"Déploiement Backend a échoué à $(date -u)\""
+          aws sns publish --topic-arn ${{ env.SNS_TOPIC_ARN }} --message "Déploiement Backend a échoué à $(date -u)" --output json
+        if: failure()
       - name: Envoyer les journaux de déploiement à CloudWatch
         run: |
           MESSAGE="Deploiement Amplify termine a $(date -u)"
@@ -367,5 +393,3 @@ jobs:
         if: always()
         env:
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
-
-          
